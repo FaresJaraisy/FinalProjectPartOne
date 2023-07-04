@@ -109,6 +109,7 @@ public class EventsList extends AppCompatActivity
                     } else {
                         imageView.setVisibility(View.INVISIBLE);
                     }
+
                     return true;
                 } else if (view.getId() == R.id.buttonConfirm) {
                     Button btn = (Button) view;
