@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/addEvent"
+        android:title="@string/addEvent" />
+    <item
+        android:id="@+id/eventList"
+        android:title="@string/eventsList" />
+    <item
+        android:id="@+id/myEventsInfo"
+        android:title="My Events List" />
+    <item
+        android:id="@+id/eventsInfo"
+        android:title="@string/eventsSummary" />
+</menu>

@@ -1,0 +1,80 @@
+<resources>
+    <string name="app_name">FinalProjectPartOne</string>
+    <string name="title_activity_menu">Menu</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="noAccYet">No Account yet? create One</string>
+    <string name="goLogin">Click to login</string>
+    <string name="email">Email</string>
+    <string name="addEvent">Add Event</string>
+    <string name="eventsList">Events List</string>
+    <string name="eventsSummary">Events Summary</string>
+    <string name="buttonBackToMain">Back</string>
+    <string name="eventType">Event Type</string>
+    <string name="dangerLevel">Severity Level</string>
+    <string name="eventDescription">Event Description</string>
+    <string name="enterEventDescription">Add Event Description </string>
+    <string name="eventLocation">Address</string>
+    <string name="eventDistrict">District </string>
+    <string name="id">id</string>
+    <string name="reportedBy">Reported By</string>
+    <string name="confirmations">Confirmations</string>
+    <string name="confirm">Confirm event</string>
+    <string name="reject">Reject event</string>
+    <string name="approved_events_title">Approved events by user</string>
+    <string name="reported_events_by_user">Reported events by user</string>
+    <string name="rejected_events_by_user">Rejected events by user</string>
+    <string name="date">Date</string>
+    <string name="severity_filter">Severity filter</string>
+    <string name="event_type_filter">Event Type filter</string>
+    <string name="district_filter">District filter</string>
+    <string name="order_events_new_on_top">Order events, new on top</string>
+    <string name="show_only_approved_by_me">Show only approved by me</string>
+    <string name="all">All</string>
+    <string name="not_active">Not Active</string>
+    <string name="register">Register</string>
+    <string-array name="Danger_levels">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+    </string-array>
+
+    <string-array name="Event_Type">
+        <item>Health</item>
+        <item>Environmental</item>
+        <item>Else</item>
+    </string-array>
+
+    <string-array name="District">
+        <item>North District</item>
+        <item>Haifa District</item>
+        <item>Center District</item>
+        <item>Tel-Aviv District</item>
+        <item>Jerusalem District</item>
+        <item>West District</item>
+    </string-array>
+
+    <string-array name="danger_levels_filter_array">
+        <item>All</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+    </string-array>
+    <string-array name="type_filter_array">
+        <item>All</item>
+        <item>Health</item>
+        <item>Environmental</item>
+        <item>Else</item>
+    </string-array>
+    <string-array name="district_filter_array">
+        <item>All</item>
+        <item>North District</item>
+        <item>Haifa District</item>
+        <item>Center District</item>
+        <item>Tel-Aviv District</item>
+        <item>Jerusalem District</item>
+        <item>West District</item>
+    </string-array>
+
+</resources>

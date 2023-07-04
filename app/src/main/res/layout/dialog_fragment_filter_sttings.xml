@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:paddingBottom="10dp"
+            android:text="Select Filters"
+            android:textColor="#000"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/heading"
+            android:id="@+id/textViewSeveirty"
+            android:text="@string/dangerLevel"/>
+
+        <Spinner
+            android:id="@+id/danger_levels_filter_spinner"
+            android:layout_width="match_parent"
+            android:paddingBottom="10dp"
+            android:layout_below="@+id/textViewSeveirty"
+            android:layout_height="48dp"
+            android:entries="@array/danger_levels_filter_array"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/danger_levels_filter_spinner"
+            android:id="@+id/textViewTypeLabel"
+            android:text="@string/eventType"/>
+
+        <Spinner
+            android:id="@+id/type_filter_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:paddingBottom="10dp"
+            android:layout_below="@+id/textViewTypeLabel"
+            android:entries="@array/type_filter_array"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/type_filter_spinner"
+            android:id="@+id/textViewDistrictLabel"
+            android:text="@string/eventDistrict"/>
+
+        <Spinner
+            android:id="@+id/district_filter_spinner"
+            android:layout_width="match_parent"
+            android:layout_below="@+id/textViewDistrictLabel"
+            android:layout_height="48dp"
+            android:entries="@array/district_filter_array"
+            />
+        <Switch
+            android:id="@+id/switchOrderByDate"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_below="@+id/district_filter_spinner"
+            android:text="Order by date (new on top)  " />
+        <Switch
+            android:id="@+id/switchApprovedByMe"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_below="@+id/switchOrderByDate"
+            android:text="Show events approved by me only" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:textSize="18sp"
+            android:textColor="#33bbff"
+            android:id="@+id/action_ok"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginRight="20dp"
+            android:textSize="18sp"
+            android:textColor="#33bbff"
+            android:id="@+id/action_cancel"/>
+
+
+    </RelativeLayout>
+</RelativeLayout>

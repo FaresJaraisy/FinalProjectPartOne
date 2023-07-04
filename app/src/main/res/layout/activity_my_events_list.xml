@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:id="@+id/filterSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/border_bottom"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+
+        android:orientation="horizontal"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Severity filter"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Event Type filter"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="District filter"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Order events, new on top"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="2dp">
+            <TextView
+                android:id="@+id/TextViewFilterSeverity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="All"
+                />
+            <TextView
+                android:id="@+id/TextViewFilterEventType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="All"
+                />
+            <TextView
+                android:id="@+id/TextViewFilterDistrict"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="All"
+                />
+            <TextView
+                android:id="@+id/TextViewFilterOrderByActive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Not Active"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+    <ListView
+        android:id="@+id/listViewEvents"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/filterSettings"/>
+</RelativeLayout>

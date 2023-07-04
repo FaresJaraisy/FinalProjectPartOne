@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context=".AddEvent">
+
+
+    <TextView
+        android:layout_marginTop="1dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dangerLevel"/>
+
+    <Spinner
+        android:id="@+id/DangerLevelSpinner"
+        android:layout_marginTop="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/Danger_levels"
+        />
+
+    <TextView
+        android:layout_marginTop="7dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eventDescription"/>
+
+    <EditText
+        android:id="@+id/descriptionEditText"
+        android:layout_marginTop="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Add Description"
+        android:inputType="textMultiLine"
+        android:minLines="2"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_marginTop="7dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location/Address"/>
+
+    <EditText
+        android:id="@+id/locationOrAddressText"
+        android:layout_marginTop="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint=" Add Location/Address"
+        android:inputType="textMultiLine"
+        android:minLines="2"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_marginTop="7dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eventType"/>
+
+    <Spinner
+        android:id="@+id/eventTypeSpinner"
+        android:layout_marginTop="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/Event_Type"
+        />
+
+    <TextView
+        android:layout_marginTop="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eventDistrict"/>
+
+    <Spinner
+        android:id="@+id/districtSpinner"
+        android:layout_marginTop="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/District"
+        />
+
+    <ImageView
+        android:id="@+id/imageViewEvent"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        app:srcCompat="@drawable/baseline_camera_alt_24" />
+
+    <Button
+        android:id="@+id/ButtonCaptureImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Capture new image"
+        android:layout_marginHorizontal="20dp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/darkBlue"
+        />
+
+    <Button
+        android:id="@+id/ButtonSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="5dp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/darkBlue"
+        />
+
+</LinearLayout>
+</ScrollView>

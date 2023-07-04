@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="618dp">
+
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/two_btn_layout"
+        android:layout_width="641dp"
+        android:layout_height="201dp"
+        android:layout_above="@+id/three_btn_layout"
+        android:layout_below="@+id/frameLayout"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="61dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:backgroundTint="@color/darkBlue"
+            android:text="Reported points1" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="130dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:backgroundTint="@color/darkBlue"
+            android:text="Approved points 2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/three_btn_layout"
+        android:layout_width="650dp"
+        android:layout_height="157dp"
+        android:layout_above="@+id/frameLayout"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="-7dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="22dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_reported_events"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:backgroundTint="@color/darkBlue"
+            android:text="Reported Events" />
+
+        <Button
+            android:id="@+id/button_approved_events"
+            android:layout_width="130dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:backgroundTint="@color/darkBlue"
+            android:text="Approved Events" />
+
+        <Button
+            android:id="@+id/button_rejected_events"
+            android:layout_width="130dp"
+            android:layout_height="60dp"
+            android:backgroundTint="@color/darkBlue"
+            android:text="Rejected Events" />
+
+    </LinearLayout>
+
+</RelativeLayout>
