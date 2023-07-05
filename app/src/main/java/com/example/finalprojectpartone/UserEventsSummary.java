@@ -13,11 +13,15 @@ import database.DBManager;
 
 public class UserEventsSummary extends AppCompatActivity {
 
-    Button buttonReportedEvents, buttonApprovedEvents, buttonRejectedEvents;
+    Button buttonReportedEvents, buttonApprovedEvents, buttonRejectedEvents, buttenConfirmationEventsPoints, buttenAddedEventsPoints;
     DBManager dbManager;
     int totalReportedEvents;
     int totalApproved;
     int totalRejected;
+
+    int totalPointsByConfirmations;
+
+    int totalPointsByEventsCreated;
     private String username;
     private int userId;
     public String getTotalReportedEvents() {
@@ -31,6 +35,15 @@ public class UserEventsSummary extends AppCompatActivity {
     public int getTotalRejected() {
         return totalRejected;
     }
+
+    public int getTotalPointsByConfirmations() {
+        return totalPointsByConfirmations;
+    }
+
+    public int getTotalPointsByEventsCreated() {
+        return totalPointsByEventsCreated;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +72,19 @@ public class UserEventsSummary extends AppCompatActivity {
             }
         });
 
+        buttenConfirmationEventsPoints.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                replaceFragment(new UserEventsConfirmationPointsFragment());
+            }
+        });
+        buttenAddedEventsPoints.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                replaceFragment(new UserEventsCreatedEventsPointsFragment());
+            }
+        });
+
     }
 
     // init variables and get UI controls view
@@ -66,6 +92,8 @@ public class UserEventsSummary extends AppCompatActivity {
         buttonReportedEvents = findViewById(R.id.button_reported_events);
         buttonApprovedEvents = findViewById(R.id.button_approved_events);
         buttonRejectedEvents = findViewById(R.id.button_rejected_events);
+        buttenConfirmationEventsPoints = findViewById(R.id.button_points_confirmations);
+        buttenAddedEventsPoints = findViewById(R.id.button_points_created_events);;
 
         Intent intent = getIntent();
         userId = intent.getIntExtra("id", -1);
@@ -76,6 +104,8 @@ public class UserEventsSummary extends AppCompatActivity {
         totalReportedEvents = dbManager.getUsersEventsReportedCount(username);
         totalApproved = dbManager.getUserConfirmations(userId);
         totalRejected = dbManager.getUserRejections(userId);
+        totalPointsByConfirmations = dbManager.getPointsOfConfirmationAndRejectionsEventsByUser(userId);
+        totalPointsByEventsCreated = dbManager.getCreatedEventsPoints(username);;
     }
 
     // used at button click handlers to set the shown fragment

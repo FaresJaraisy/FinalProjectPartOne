@@ -1,5 +1,7 @@
 package com.example.finalprojectpartone;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -7,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,6 +59,7 @@ public class EventsList extends AppCompatActivity
     //register confirm on event item and reload to refresh view
     public void confirmOnClickHandler(View v) {
         String id = (String)v.getTag();
+        Log.d(TAG, "confirm id: " + id + " userId: " + userId );
         dbManager.confirmEvent(id,userId);
         eventsAdapter.changeCursor(dbManager.getAllEventsCursor());
         Toast.makeText(EventsList.this, "Item " +

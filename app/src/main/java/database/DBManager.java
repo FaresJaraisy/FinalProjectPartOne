@@ -155,7 +155,7 @@ public class DBManager {
         database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
                 " SET " + DatabaseHelper.CONFIRMATIONS_COL +
                 " = " + DatabaseHelper.CONFIRMATIONS_COL + " + " + INC +
-                " WHERE " + DatabaseHelper._ID + " = " + id);
+                " WHERE " + DatabaseHelper._ID + " = " + userid);
     }
 
     // This method rejects the event (as a separate value of the confirmations)
@@ -170,7 +170,7 @@ public class DBManager {
         database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
                 " SET " + REJECTIONS_COL +
                 " = " + REJECTIONS_COL + " + " + INC +
-                " WHERE " + DatabaseHelper._ID + " = " + id);
+                " WHERE " + DatabaseHelper._ID + " = " + userId);
     }
 
     //used for mapping the cursor adaptor
@@ -407,6 +407,14 @@ public class DBManager {
         return rejections;
     }
 
+    public int getPointsOfConfirmationAndRejectionsEventsByUser(int id)
+    {
+        int userConfirmations = getUserConfirmations(id);
+        int userRejections = getUserRejections(id);
+        int totalPoints = (userConfirmations + userRejections) * 3;
+        return totalPoints;
+    }
+
     // The method returns the number of events confirmed by the user
     public int getUserConfirmations(int id) {
         int confirmations=0;
@@ -422,6 +430,14 @@ public class DBManager {
         return confirmations;
     }
 
+    public int getPointsOfCreatedEventsByUser(int id)
+    {
+        int userConfirmations = getUserConfirmations(id);
+        int userRejections = getUserRejections(id);
+        int totalPoints = (userConfirmations + userRejections) * 3;
+        return totalPoints;
+    }
+
     // The method returns the number of events reported by the user
     public int getUsersEventsReportedCount(String user) {
         int eventsCount=0;
@@ -435,6 +451,24 @@ public class DBManager {
         }
         cursor.close();
         return eventsCount;
+    }
+
+    public int getCreatedEventsPoints(String userColValue) {
+        int count = 0;
+        String query = "SELECT COUNT(*) FROM " + EVENTS_TABLE_NAME + " WHERE " + USER_COL + " = ? AND " +
+                CONFIRMATIONS_COL + " > (0.7 * (" + CONFIRMATIONS_COL + " + " + REJECTIONS_COL + "))";
+
+            String[] selectionArgs = {userColValue};
+            Cursor cursor = database.rawQuery(query, selectionArgs);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+
+            if (cursor != null) {
+                cursor.close();
+            }
+        return count * 10;
     }
 
     // delete event by event id and remove conformation from EVENT_TO_USER_CONFIRMATION_TABLE
