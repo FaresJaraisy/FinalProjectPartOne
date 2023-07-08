@@ -22,6 +22,7 @@
     <string name="confirmations">Confirmations</string>
     <string name="confirm">Confirm event</string>
     <string name="reject">Reject event</string>
+    <string name="comments">Comments</string>
     <string name="approved_events_title">Approved events by user</string>
     <string name="reported_events_by_user">Reported events by user</string>
     <string name="rejected_events_by_user">Rejected events by user</string>
@@ -80,5 +81,7 @@
     </string-array>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="save_button_label">Save</string>
+    <string name="add_button_label">Add</string>
 
 </resources>

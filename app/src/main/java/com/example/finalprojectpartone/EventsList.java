@@ -74,7 +74,12 @@ public class EventsList extends AppCompatActivity
         Toast.makeText(EventsList.this, "Item " +
                 id + "rejected",Toast.LENGTH_LONG).show();
     }
-
+    public void commentsOnClickHandler(View v) {
+        Intent intent = new Intent(getApplicationContext(), ViewCommentsActivity.class);
+        intent.putExtra("id", userId);
+        intent.putExtra("username", username);
+        startActivity(intent);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

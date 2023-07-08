@@ -27,4 +27,20 @@ public class Comment{
     public int getId() {
         return id;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
 }
