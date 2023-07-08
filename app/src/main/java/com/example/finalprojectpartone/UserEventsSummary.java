@@ -93,7 +93,7 @@ public class UserEventsSummary extends AppCompatActivity {
         buttonApprovedEvents = findViewById(R.id.button_approved_events);
         buttonRejectedEvents = findViewById(R.id.button_rejected_events);
         buttenConfirmationEventsPoints = findViewById(R.id.button_points_confirmations);
-        buttenAddedEventsPoints = findViewById(R.id.button_points_created_events);;
+        buttenAddedEventsPoints = findViewById(R.id.button_points_created_events);
 
         Intent intent = getIntent();
         userId = intent.getIntExtra("id", -1);
@@ -105,7 +105,7 @@ public class UserEventsSummary extends AppCompatActivity {
         totalApproved = dbManager.getUserConfirmations(userId);
         totalRejected = dbManager.getUserRejections(userId);
         totalPointsByConfirmations = dbManager.getPointsOfConfirmationAndRejectionsEventsByUser(userId);
-        totalPointsByEventsCreated = dbManager.getCreatedEventsPoints(username);;
+        totalPointsByEventsCreated = dbManager.getCreatedEventsPoints(username);
     }
 
     // used at button click handlers to set the shown fragment

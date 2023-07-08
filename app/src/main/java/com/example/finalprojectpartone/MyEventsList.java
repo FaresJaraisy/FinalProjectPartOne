@@ -37,7 +37,7 @@ public class MyEventsList extends AppCompatActivity
     TextView textViewFilterSeverity, textViewFilterEventType, textViewFilterDistrict, textViewFilterOrderByActive;
     AlertDialog.Builder builder;
 
-    // recieve current Filter setting from filter dialog fragment
+    // receive current Filter setting from filter dialog fragment
     @Override public void sendInput(FilterSettings filterSettings)
     {
         Toast.makeText(MyEventsList.this, "Filter Applied" ,Toast.LENGTH_LONG).show();

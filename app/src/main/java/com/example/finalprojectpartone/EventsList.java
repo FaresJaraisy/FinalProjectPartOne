@@ -35,7 +35,7 @@ public class EventsList extends AppCompatActivity
             textViewFilterOrderByActive,
             textViewFilterApprovedByMe;
 
-    // recieve current Filter setting from filter dialog fragment
+    // receive current Filter setting from filter dialog fragment
     @Override public void sendInput(FilterSettings filterSettings)
     {
         Toast.makeText(EventsList.this, "Filter Applied" ,Toast.LENGTH_LONG).show();
@@ -119,21 +119,13 @@ public class EventsList extends AppCompatActivity
                     Button btn = (Button) view;
                     btn.setTag(cursor.getString(columnIndex));
                     // user is checked to set the button enable, user cannot confirm his events
-                    if (cursor.getString(0).equals(username)) {
-                        btn.setEnabled(false);
-                    } else {
-                        btn.setEnabled(true);
-                    }
+                    btn.setEnabled(!cursor.getString(0).equals(username));
                     return true;
                 } else if (view.getId() == R.id.buttonReject) {
                     Button btn = (Button) view;
                     btn.setTag(cursor.getString(columnIndex));
                     // user is checked to set the button enable, user cannot reject his events
-                    if (cursor.getString(0).equals(username)) {
-                        btn.setEnabled(false);
-                    } else {
-                        btn.setEnabled(true);
-                    }
+                    btn.setEnabled(!cursor.getString(0).equals(username));
                     return true;
                 } else {  // Process the rest of the adapter with default settings.
                     return false;

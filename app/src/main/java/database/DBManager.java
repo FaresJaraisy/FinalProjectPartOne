@@ -21,12 +21,16 @@ import com.example.finalprojectpartone.UserProfile;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import data.Comment;
 import data.Event;
 
 public class DBManager {
     private DatabaseHelper dbHelper;
-    private Context context;
+    private final Context context;
     private SQLiteDatabase database;
     public static final String INC = "1";
     public DBManager(Context c) {
@@ -150,7 +154,7 @@ public class DBManager {
                         " WHERE " + DatabaseHelper._ID + " = " + id);
         String insSql = "INSERT OR IGNORE INTO " + DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE +
                 "(" + DatabaseHelper.USER_ID_COL + ", " + DatabaseHelper.EVENT_ID_COL +") VALUES(" +
-                String.valueOf(userid) + ", " + id + " )";
+                userid + ", " + id + " )";
         database.execSQL(insSql);
         database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
                 " SET " + DatabaseHelper.CONFIRMATIONS_COL +
@@ -458,17 +462,178 @@ public class DBManager {
         String query = "SELECT COUNT(*) FROM " + EVENTS_TABLE_NAME + " WHERE " + USER_COL + " = ? AND " +
                 CONFIRMATIONS_COL + " > (0.7 * (" + CONFIRMATIONS_COL + " + " + REJECTIONS_COL + "))";
 
-            String[] selectionArgs = {userColValue};
-            Cursor cursor = database.rawQuery(query, selectionArgs);
+        String[] selectionArgs = {userColValue};
+        Cursor cursor = database.rawQuery(query, selectionArgs);
 
-            if (cursor != null && cursor.moveToFirst()) {
-                count = cursor.getInt(0);
-            }
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
 
-            if (cursor != null) {
-                cursor.close();
-            }
+        if (cursor != null) {
+            cursor.close();
+        }
         return count * 10;
+    }
+
+    /**
+     * Get all comments created by author (username)
+     * @param author
+     * @return
+     */
+    public List<Comment> getCommentsByCreator(String author) throws DBManagerException {
+        List<Comment> result = new ArrayList<>();
+        String getCommentsByCreatorQuery = "SELECT * " +
+                "FROM " + COMMENTS_TABLE +
+                "WHERE " + CREATOR_COL + " = ?;";
+        String[] selectionArgs = {author};
+        Cursor cursor = database.rawQuery(getCommentsByCreatorQuery, selectionArgs);
+
+        if(cursor.moveToFirst()){
+            do{
+                int idIndex = cursor.getColumnIndex(_ID);
+                int contentIndex = cursor.getColumnIndex(CONTENT_COL);
+                int eventIdIndex = cursor.getColumnIndex(EVENT_ID_COL);
+
+                if(contentIndex < 0 || eventIdIndex < 0 || idIndex < 0){
+                    //if at least one of the indices is negative
+                    // throw exception
+                    throw new DBManagerException("wrong column index");
+                }
+                int _id = cursor.getInt(idIndex);
+                String content = cursor.getString(contentIndex);
+                int eventId = cursor.getInt(eventIdIndex);
+
+                Comment comment = new Comment(_id, content, author, eventId);
+
+                result.add(comment);
+            } while(cursor.moveToNext());
+        }
+        cursor.close();
+
+        return result;
+    }
+
+    /**
+     * Get comments by eventId
+     * @param eventId
+     * @return
+     */
+    public List<Comment> getCommentsByEventId(int eventId) throws DBManagerException {
+        List<Comment> result = new ArrayList<>();
+        String getCommentsByEventIdQuery = "SELECT * " +
+                "FROM " + COMMENTS_TABLE +
+                "WHERE " + EVENT_ID_COL + " = ?;";
+        String[] selectionArgs = {String.valueOf(eventId)};
+        Cursor cursor = database.rawQuery(getCommentsByEventIdQuery, selectionArgs);
+        if(cursor.moveToFirst()){
+            do{
+                int idIndex = cursor.getColumnIndex(_ID);
+                int authorIndex = cursor.getColumnIndex(CREATOR_COL);
+                int contentIndex = cursor.getColumnIndex(CONTENT_COL);
+
+                if(authorIndex < 0 || contentIndex < 0 || idIndex < 0){
+                    //if at least one of the indices is negative
+                    // throw exception
+                    throw new DBManagerException("wrong column index");
+                }
+
+                int _id = cursor.getInt(idIndex);
+                String author = cursor.getString(authorIndex);
+                String content = cursor.getString(contentIndex);
+
+                Comment comment = new Comment(_id, content, author, eventId);
+
+                result.add(comment);
+            } while(cursor.moveToNext());
+        }
+        cursor.close();
+
+        return result;
+    }
+
+    /**
+     * Deletes a comment given an Id
+     * @param _id
+     * @return
+     */
+    public boolean deleteComment(int _id){
+        String whereClause = "_id = ?";
+        String[] whereArgs = {String.valueOf(_id)};
+        int rowsDeleted = database.delete(COMMENTS_TABLE, whereClause, whereArgs);
+        return rowsDeleted > 0;
+    }
+
+    /**
+     * Updates a comment with the new content given an id.
+     * @param _id
+     * @param newContent
+     * @return
+     */
+    public boolean updateComment(int _id, String newContent){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CONTENT_COL, newContent);
+        String whereClause = "_id = ?";
+        String[] whereArgs = {String.valueOf(_id)};
+
+        int rowsUpdated = database.update(COMMENTS_TABLE,contentValues, whereClause, whereArgs);
+        return rowsUpdated > 0;
+    }
+
+    /**
+     *  Adds a new comment to the database
+     * @param username
+     * @param commentContent
+     * @return
+     */
+    public boolean addComment(String username, String commentContent, int eventId) throws DBManagerException {
+        boolean insertSuccess = false;
+
+        ContentValues contentValue = new ContentValues();
+        contentValue.put(DatabaseHelper.CREATOR_COL, username);
+        contentValue.put(DatabaseHelper.CONTENT_COL, commentContent);
+        contentValue.put(DatabaseHelper.EVENT_ID_COL, eventId);
+
+        if(!checkCommentValidity(username, eventId)){
+            throw new DBManagerException("Cannot add comment to event reported by comment creator");
+        }
+
+
+        long rowId = database.insert(DatabaseHelper.COMMENTS_TABLE, null, contentValue);
+        if (rowId > -1){
+            insertSuccess = true;
+        }
+        return insertSuccess;
+
+    }
+
+    /**
+     * Helper function to check if the user creating the comment is adding it to
+     * an event NOT created by the user.
+     * @param creator
+     * @param eventId
+     * @return
+     */
+    private boolean checkCommentValidity(String creator, int eventId){
+        boolean result = false;
+        String getEventCreatorQuery = "SELECT " + DatabaseHelper.USER_ID_COL +
+                "FROM " + DatabaseHelper.EVENTS_TABLE_NAME +
+                " WHERE _id = ?;";
+
+        String[] selectionArgs = {String.valueOf(eventId)};
+        Cursor cursor = database.rawQuery(getEventCreatorQuery, selectionArgs);
+
+        String reporter = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            reporter = cursor.getString(0);
+        }
+
+        if (cursor != null) {
+            cursor.close();
+        }
+        if (!reporter.equals(creator)){
+            result = true;
+        }
+        return result;
     }
 
     // delete event by event id and remove conformation from EVENT_TO_USER_CONFIRMATION_TABLE

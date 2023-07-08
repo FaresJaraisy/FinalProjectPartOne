@@ -26,6 +26,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String USER_NAME_COL = "USER_NAME";
     public static final String USER_PASSWORD_COL = "USER_PASSWORD";
     public static final String USERS_TABLE = "USERS";
+    public static final String COMMENTS_TABLE = "COMMENTS";
+    public static final String CREATOR_COL = "CREATOR";
+    public static final String CONTENT_COL = "CONTENT";
+
 
     public static final String EVENT_TO_USER_CONFIRMATION_TABLE = "EVENT_TO_USER_CONFIRMATION";
     public static final String USER_ID_COL = "USER_ID";
@@ -72,6 +76,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             CONFIRMATIONS_COL + " TEXT, " +
             REJECTIONS_COL + " TEXT" +
             ");";
+    private static final String CREATE_COMMENTS_TABLE = "create table " + COMMENTS_TABLE + " (" +
+            _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            CREATOR_COL + " TEXT, " +
+            CONTENT_COL + " TEXT, " +
+            EVENT_ID_COL + " INTEGER, " +
+            "FOREIGN KEY (CREATOR) REFERENCES USERS(USER_NAME)," +
+            "FOREIGN KEY (EVENT_ID) REFERENCES EVENTS(_id)" +
+            ");";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -83,6 +95,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_DISTRICT_TABLE);
         db.execSQL(CREATE_EVENTS_TABLE);
         db.execSQL(CREATE_USERS_TABLE);
+        db.execSQL(CREATE_COMMENTS_TABLE);
         // insert initial users - new user registration will be implemented in part 2
         //db.execSQL("insert into " + USERS_TABLE +" (" +
         //            USER_NAME_COL + ", " +
