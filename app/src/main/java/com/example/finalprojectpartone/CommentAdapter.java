@@ -2,11 +2,13 @@ package com.example.finalprojectpartone;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -16,10 +18,12 @@ public class CommentAdapter extends BaseAdapter {
     private Context context;
     private List<Comment> comments;
     private OnDeleteButtonClickListener deleteButtonClickListener;
-
-    public CommentAdapter(Context context, List<Comment> comments) {
+    private OnEditButtonClickListener editButtonClickListener;
+    String username;
+    public CommentAdapter(Context context, List<Comment> comments, String username) {
         this.context = context;
         this.comments = comments;
+        this.username = username;
     }
 
     @Override
@@ -59,13 +63,13 @@ public class CommentAdapter extends BaseAdapter {
         holder.contentTextView.setText(comment.getContent());
 
         // Hide or show delete/edit buttons based on the author's username
-        //if (comment.getUsername().equals("connected_user")) {
+        if (comment.getUsername().equals(username)) {
             holder.deleteButton.setVisibility(View.VISIBLE);
             holder.editButton.setVisibility(View.VISIBLE);
-       // } else {
-          //  holder.deleteButton.setVisibility(View.GONE);
-           //// holder.editButton.setVisibility(View.GONE);
-       // }
+        } else {
+            holder.deleteButton.setVisibility(View.GONE);
+            holder.editButton.setVisibility(View.GONE);
+        }
 
         // Delete button click listener
         holder.deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -77,7 +81,16 @@ public class CommentAdapter extends BaseAdapter {
             }
         });
 
-        // TODO: Implement edit button click listener
+
+        // Edit button click listener
+        holder.editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (editButtonClickListener != null) {
+                    editButtonClickListener.onEditButtonClick(position);
+                }
+            }
+        });
 
         return convertView;
     }
@@ -89,7 +102,13 @@ public class CommentAdapter extends BaseAdapter {
     public interface OnDeleteButtonClickListener {
         void onDeleteButtonClick(int position);
     }
+    public void setOnEditButtonClickListener(OnEditButtonClickListener listener) {
+        this.editButtonClickListener = listener;
+    }
 
+    public interface OnEditButtonClickListener {
+        void onEditButtonClick(int position);
+    }
     private static class ViewHolder {
         TextView authorTextView;
         TextView contentTextView;

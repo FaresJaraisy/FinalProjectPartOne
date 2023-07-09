@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 main_intent.putExtra("username", userdata.getUserName());
                 userId = userdata.getId();
                 username = userdata.getUserName();
+                setTitle("Logged as: " + userdata.getUserName());
              } else {
                 Log.d(TAG, "in main activity user data is null");
             }
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             //intent.putExtra("username", user.getEmail());
             //userId = intent.getIntExtra("id", -1);
             //username= intent.getStringExtra("username");
-            setTitle("Logged as: " + userdata.getUserName());
+
         }
         button.setOnClickListener (new View.OnClickListener() {
             @Override

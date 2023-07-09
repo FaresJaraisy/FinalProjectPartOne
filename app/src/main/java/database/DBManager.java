@@ -191,6 +191,7 @@ public class DBManager {
             DatabaseHelper.CONFIRMATIONS_COL,
             REJECTIONS_COL,
             DatabaseHelper._ID,
+            DatabaseHelper._ID,
             DatabaseHelper._ID
     };
 
@@ -207,7 +208,8 @@ public class DBManager {
             R.id.textViewConfirmations,
             R.id.textViewRejections,
             R.id.buttonConfirm,
-            R.id.buttonReject
+            R.id.buttonReject,
+            R.id.showCommentsId
     };
 
     int[] toMyEventsViewIDs = new int[]{
@@ -223,7 +225,8 @@ public class DBManager {
             R.id.textViewConfirmations,
             R.id.textViewRejections,
             R.id.buttonEditEvent,
-            R.id.buttonDeleteEvent
+            R.id.buttonDeleteEvent,
+            R.id.showCommentsId
     };
 
     // get a cursor adaptor of specific user events
@@ -522,7 +525,7 @@ public class DBManager {
         List<Comment> result = new ArrayList<>();
         String getCommentsByEventIdQuery = "SELECT * " +
                 "FROM " + COMMENTS_TABLE +
-                "WHERE " + EVENT_ID_COL + " = ?;";
+                " WHERE " + EVENT_ID_COL + " = ?;";
         String[] selectionArgs = {String.valueOf(eventId)};
         Cursor cursor = database.rawQuery(getCommentsByEventIdQuery, selectionArgs);
         if(cursor.moveToFirst()){
@@ -615,8 +618,9 @@ public class DBManager {
      */
     private boolean checkCommentValidity(String creator, int eventId){
         boolean result = false;
-        String getEventCreatorQuery = "SELECT " + DatabaseHelper.USER_ID_COL +
-                "FROM " + DatabaseHelper.EVENTS_TABLE_NAME +
+        Log.d(TAG, "check if " + creator + " has created event " + eventId );
+        String getEventCreatorQuery = "SELECT " + DatabaseHelper.USER_COL +
+                " FROM " + DatabaseHelper.EVENTS_TABLE_NAME +
                 " WHERE _id = ?;";
 
         String[] selectionArgs = {String.valueOf(eventId)};
@@ -630,7 +634,8 @@ public class DBManager {
         if (cursor != null) {
             cursor.close();
         }
-        if (!reporter.equals(creator)){
+        Log.d(TAG, "event reporter " + reporter + " comment creator " + creator);
+        if (reporter == null || !reporter.equals(creator)){
             result = true;
         }
         return result;

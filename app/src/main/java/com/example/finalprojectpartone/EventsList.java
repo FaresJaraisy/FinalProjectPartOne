@@ -69,15 +69,18 @@ public class EventsList extends AppCompatActivity
     //register reject on event item and reload to refresh view
     public void rejectOnClickHandler(View v) {
         String id = (String)v.getTag();
+        Log.d(TAG, "rejected event id: " + id);
         dbManager.rejectEvent(id,userId);
         eventsAdapter.changeCursor(dbManager.getAllEventsCursor());
         Toast.makeText(EventsList.this, "Item " +
                 id + "rejected",Toast.LENGTH_LONG).show();
     }
     public void commentsOnClickHandler(View v) {
+        String id = (String)v.getTag();
+        Log.d(TAG, "set event id: " + id + " set username " + username );
         Intent intent = new Intent(getApplicationContext(), ViewCommentsActivity.class);
-        intent.putExtra("id", userId);
         intent.putExtra("username", username);
+        intent.putExtra("eventId", id);
         startActivity(intent);
     }
     @Override
@@ -89,7 +92,6 @@ public class EventsList extends AppCompatActivity
         userId = intent.getIntExtra("id", -1);
         username= intent.getStringExtra("username");
         setTitle("Events List, (all users)");
-
         listViewEvents = findViewById(R.id.listViewEvents);
 
         textViewFilterSeverity = findViewById(R.id.TextViewFilterSeverity);
@@ -131,6 +133,11 @@ public class EventsList extends AppCompatActivity
                     btn.setTag(cursor.getString(columnIndex));
                     // user is checked to set the button enable, user cannot reject his events
                     btn.setEnabled(!cursor.getString(0).equals(username));
+                    return true;
+                } else if (view.getId() == R.id.showCommentsId) {
+                    Button btn = (Button) view;
+                    btn.setTag(cursor.getString(columnIndex));
+
                     return true;
                 } else {  // Process the rest of the adapter with default settings.
                     return false;
