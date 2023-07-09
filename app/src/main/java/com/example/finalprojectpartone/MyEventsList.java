@@ -86,6 +86,15 @@ public class MyEventsList extends AppCompatActivity
         alert.show();
     }
 
+    public void commentsOnClickHandler(View v) {
+        String id = (String)v.getTag();
+        Log.d(TAG, "set event id: " + id + " set username " + username );
+        Intent intent = new Intent(getApplicationContext(), ViewCommentsActivity.class);
+        intent.putExtra("username", username);
+        intent.putExtra("eventId", id);
+        startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,7 +145,11 @@ public class MyEventsList extends AppCompatActivity
                     Button btn = (Button) view;
                     btn.setTag(cursor.getString(columnIndex));
                     return true;
-                } else {  // Process the rest of the adapter with default settings.
+                }  else if (view.getId() == R.id.showCommentsId) {
+                    Button btn = (Button) view;
+                    btn.setTag(cursor.getString(columnIndex));
+                    return true;
+                }else {  // Process the rest of the adapter with default settings.
                     return false;
                 }
             }

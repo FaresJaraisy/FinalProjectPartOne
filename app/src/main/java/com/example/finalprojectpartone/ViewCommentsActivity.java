@@ -136,6 +136,7 @@ public class ViewCommentsActivity extends Activity {
                     } catch (DBManagerException e) {
                         Toast.makeText(ViewCommentsActivity.this,
                                 "Cannot comment on your own event", Toast.LENGTH_SHORT).show();
+                        return;
                     }
                     refreshCommentsFromDB();
                     commentAdapter.notifyDataSetChanged();

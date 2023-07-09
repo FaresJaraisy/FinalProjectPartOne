@@ -1,6 +1,8 @@
 package com.example.finalprojectpartone;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -72,7 +74,7 @@ public class CommentAdapter extends BaseAdapter {
         }
 
         // Delete button click listener
-        holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+   /*     holder.deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (deleteButtonClickListener != null) {
@@ -90,7 +92,52 @@ public class CommentAdapter extends BaseAdapter {
                     editButtonClickListener.onEditButtonClick(position);
                 }
             }
+        });*/
+        // Edit button click listener
+        holder.editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Show AlertDialog to confirm edit
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Confirm Edit");
+                builder.setMessage("Are you sure you want to edit this comment?");
+                builder.setPositiveButton("Edit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (editButtonClickListener != null) {
+                            editButtonClickListener.onEditButtonClick(position);
+                        }
+                        Toast.makeText(context, "Edit button clicked for position: " + position, Toast.LENGTH_SHORT).show();
+                    }
+                });
+                builder.setNegativeButton("Cancel", null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
         });
+
+// Delete button click listener
+        holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Show AlertDialog to confirm delete
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Confirm Delete");
+                builder.setMessage("Are you sure you want to delete this comment?");
+                builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (deleteButtonClickListener != null) {
+                            deleteButtonClickListener.onDeleteButtonClick(position);
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
 
         return convertView;
     }
