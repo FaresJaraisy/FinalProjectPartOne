@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingTop="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp"
+    tools:context=".TotalEventsSummary">
+
+    <TextView
+        android:id="@+id/topUsersTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Top 10 reporting users:"
+        android:textStyle="bold" />
+
+    <ListView
+        android:id="@+id/topUsersListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topUsersTitleTextView" />
+
+    <TextView
+        android:id="@+id/bestUserTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topUsersListView"
+        android:layout_marginTop="16dp"
+        android:text="Best user point:"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/bestUserTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bestUserTitleTextView" />
+
+    <TextView
+        android:id="@+id/totalEventsTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bestUserTextView"
+        android:layout_marginTop="16dp"
+        android:text="Total events"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lowEventsTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/totalEventsTitleTextView" />
+
+    <TextView
+        android:id="@+id/mediumEventsTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/lowEventsTextView" />
+
+    <TextView
+        android:id="@+id/highEventsTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/mediumEventsTextView" />
+
+</RelativeLayout>

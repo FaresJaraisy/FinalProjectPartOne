@@ -196,6 +196,10 @@ public class MyEventsList extends AppCompatActivity
             Intent eventListInfoIntent = new Intent(this, UserEventsSummary.class);
             startActivity(eventListInfoIntent);
             return true;
+        } else if (id == R.id.totalEventsInfo) {
+            Intent totalEventsSummary = new Intent(this, TotalEventsSummary.class);
+            startActivity(totalEventsSummary);
+            return true;
         }
         else {
             return true;

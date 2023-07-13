@@ -113,6 +113,12 @@ public class MainActivity extends AppCompatActivity {
             eventListSummaryIntent.putExtra("username", username);
             startActivity(eventListSummaryIntent);
             return true;
+        } else if (id == R.id.totalEventsInfo) {
+            Intent totalEventListSummaryIntent = new Intent(MainActivity.this, TotalEventsSummary.class);
+            totalEventListSummaryIntent.putExtra("id", userId);
+            totalEventListSummaryIntent.putExtra("username", username);
+            startActivity(totalEventListSummaryIntent);
+            return true;
         }
         else {
             return true;

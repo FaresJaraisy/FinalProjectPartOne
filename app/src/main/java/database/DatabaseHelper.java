@@ -45,8 +45,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             DATE_COL + " TEXT, " +
             CONFIRMATIONS_COL + " INTEGER, " +
             REJECTIONS_COL + " INTEGER, " +
-            USER_COL + " INTEGER, " +
-            USER_ID_COL + " TEXT);";
+            USER_COL + " TEXT, " +
+            USER_ID_COL + " INTEGER);";
     // Table columns
     public static final String _ID = "_id";
     public static final String SUBJECT = "subject";

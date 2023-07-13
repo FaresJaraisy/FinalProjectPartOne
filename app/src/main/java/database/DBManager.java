@@ -20,6 +20,8 @@ import com.example.finalprojectpartone.UserProfile;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 import data.Comment;
 import data.Event;
+import data.UserEventCount;
 
 public class DBManager {
     private DatabaseHelper dbHelper;
@@ -437,13 +440,6 @@ public class DBManager {
         return confirmations;
     }
 
-    public int getPointsOfCreatedEventsByUser(int id)
-    {
-        int userConfirmations = getUserConfirmations(id);
-        int userRejections = getUserRejections(id);
-        int totalPoints = (userConfirmations + userRejections) * 3;
-        return totalPoints;
-    }
 
     // The method returns the number of events reported by the user
     public int getUsersEventsReportedCount(String user) {
@@ -667,7 +663,7 @@ public class DBManager {
                 DatabaseHelper.SEVERITY_COL,
                 DatabaseHelper.DATE_COL,
                 DatabaseHelper.CONFIRMATIONS_COL,
-                REJECTIONS_COL,
+                DatabaseHelper.REJECTIONS_COL,
                 DatabaseHelper.USER_COL,
                 DatabaseHelper.USER_ID_COL
         };
@@ -703,4 +699,112 @@ public class DBManager {
         String[] whereArgs = {String.valueOf(event.getId())};
         int i = database.update(DatabaseHelper.EVENTS_TABLE_NAME, contentValues, DatabaseHelper._ID + " =?", whereArgs);
     }
+
+    // get top 10 users based on the number of events reported
+    public List<UserEventCount> getTop10ReportingUsers() {
+        List<UserEventCount> topUsers = new ArrayList<>();
+
+        // Query to retrieve the number of events created by each user
+        String query = "SELECT " + USER_COL + ", COUNT(*) AS eventCount " +
+                "FROM " + EVENTS_TABLE_NAME +
+                " GROUP BY " + USER_COL  +
+                " ORDER BY eventCount DESC " +
+                "LIMIT 10";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        // Iterate over the cursor to retrieve user and event count
+        if (cursor.moveToFirst()) {
+            do {
+                String username = cursor.getString(cursor.getColumnIndex(DatabaseHelper.USER_COL));
+                int eventCount = cursor.getInt(cursor.getColumnIndex("eventCount"));
+
+                UserEventCount userEventCount = new UserEventCount(username, eventCount);
+                topUsers.add(userEventCount);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        // Sort according to top user to less reporting number
+        Collections.sort(topUsers, new Comparator<UserEventCount>() {
+            @Override
+            public int compare(UserEventCount u1, UserEventCount u2) {
+                return Integer.compare(u2.getEventCount(), u1.getEventCount());
+            }
+        });
+
+        return topUsers;
+    }
+
+    //getCreatedEventsPoints(String userColValue)
+    //getPointsOfConfirmationAndRejectionsEventsByUser(int id)
+    //totalPointsByConfirmations = dbManager.getPointsOfConfirmationAndRejectionsEventsByUser(userId);
+    //totalPointsByEventsCreated = dbManager.getCreatedEventsPoints(username);
+    public UserEventCount getBestUserPoints()
+    {
+        UserEventCount userEventMaxCount = new UserEventCount("", 0);
+
+        // Query to retrieve all users
+        String query = "SELECT * FROM " + USERS_TABLE;
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                int userId = cursor.getInt(cursor.getColumnIndex(_ID));
+                String username = cursor.getString(cursor.getColumnIndex(USER_NAME_COL));
+                int currrentPoints = getPointsOfConfirmationAndRejectionsEventsByUser(userId);
+                currrentPoints += getCreatedEventsPoints(username);
+                if(currrentPoints > userEventMaxCount.getEventCount())
+                {
+                    userEventMaxCount.setUsername(username);
+                    userEventMaxCount.setEventCount(currrentPoints);
+                }
+
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return userEventMaxCount;
+    }
+
+    public int getNumberOfLowSeverityEvents() {
+        String[] columns = {SEVERITY_COL};
+        String selection = SEVERITY_COL + " = ?";
+        String[] selectionArgs = {"Low"};
+
+        Cursor cursor = database.query(DatabaseHelper.EVENTS_TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+        int count = cursor.getCount();
+
+        cursor.close();
+        return count;
+    }
+
+    public int getNumberOfMediumSeverityEvents() {
+        String[] columns = {SEVERITY_COL};
+        String selection = SEVERITY_COL + " = ?";
+        String[] selectionArgs = {"Medium"};
+
+        Cursor cursor = database.query(DatabaseHelper.EVENTS_TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+        int count = cursor.getCount();
+
+        cursor.close();
+        return count;
+    }
+
+    public int getNumberOfHighSeverityEvents() {
+        String[] columns = {SEVERITY_COL};
+        String selection = SEVERITY_COL + " = ?";
+        String[] selectionArgs = {"High"};
+
+        Cursor cursor = database.query(DatabaseHelper.EVENTS_TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+        int count = cursor.getCount();
+
+        cursor.close();
+        return count;
+    }
 }
+
+
+
+

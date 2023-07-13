@@ -9,7 +9,8 @@
     <string name="email">Email</string>
     <string name="addEvent">Add Event</string>
     <string name="eventsList">Events List</string>
-    <string name="eventsSummary">Events Summary</string>
+    <string name="eventsSummary">My events Summary</string>
+    <string name="totalSummary">Total events Summary</string>
     <string name="buttonBackToMain">Back</string>
     <string name="eventType">Event Type</string>
     <string name="dangerLevel">Severity Level</string>
@@ -83,5 +84,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="save_button_label">Save</string>
     <string name="add_button_label">Add</string>
+    <string name="best_user_point">Best user point:</string>
+    <string name="top_10_reporting_users">Top 10 reporting users:</string>
+    <string name="total_events">Total events</string>
 
 </resources>

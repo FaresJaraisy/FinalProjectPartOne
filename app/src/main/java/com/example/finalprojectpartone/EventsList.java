@@ -90,7 +90,7 @@ public class EventsList extends AppCompatActivity
 
         Intent intent = getIntent();
         userId = intent.getIntExtra("id", -1);
-        username= intent.getStringExtra("username");
+        username = intent.getStringExtra("username");
         setTitle("Events List, (all users)");
         listViewEvents = findViewById(R.id.listViewEvents);
 
@@ -104,7 +104,7 @@ public class EventsList extends AppCompatActivity
 
         eventsAdapter = dbManager.populateAllUsersEventsListView();
 
-        eventsAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+       eventsAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 if (view.getId() == R.id.imageViewEventImage) {
                     // Get the byte array from the database.
@@ -147,6 +147,7 @@ public class EventsList extends AppCompatActivity
         listViewEvents.setAdapter(eventsAdapter);
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.filter_menu, menu);
@@ -171,6 +172,10 @@ public class EventsList extends AppCompatActivity
         } else if (id == R.id.eventsInfo) {
             Intent eventListInfoIntent = new Intent(this, UserEventsSummary.class);
             startActivity(eventListInfoIntent);
+            return true;
+        } else if (id == R.id.totalEventsInfo) {
+            Intent allEventListInfoIntent = new Intent(this, TotalEventsSummary.class);
+            startActivity(allEventListInfoIntent);
             return true;
         } else {
             return true;
