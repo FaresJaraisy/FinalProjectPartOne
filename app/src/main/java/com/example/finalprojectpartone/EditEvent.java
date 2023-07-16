@@ -25,6 +25,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import data.Event;
 import database.DBManager;
 
@@ -51,7 +55,7 @@ public class EditEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_event);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         init_fields();
@@ -63,7 +67,11 @@ public class EditEvent extends AppCompatActivity {
         username = intent.getStringExtra("username");
         eventId = intent.getStringExtra("eventId");
         setTitle("Edit event");
-        setFields();
+        try {
+            setFields();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,7 +100,7 @@ public class EditEvent extends AppCompatActivity {
                 }
 
                 // Continue using the 'bitmap' variable in your code
-                event = new Event(
+                /*event = new Event(
                         eventType,
                         bitmap,
                         descriptionEditText.getText().toString(),
@@ -100,15 +108,36 @@ public class EditEvent extends AppCompatActivity {
                         district,
                         dangerLevel,
                         new UserProfile(userId, username)
-                );
+                );*/
 
                 //event = new Event(eventType, ((BitmapDrawable) imageViewEvent.getDrawable()).getBitmap(),descriptionEditText.getText().toString(),
                 //        locationOrAddressText.getText().toString(), district, dangerLevel,
                 //        new UserProfile(userId, username));
 
-                event.setId(Integer.parseInt(eventId));
+                //event.setId(Integer.parseInt(eventId));
+                event = new Event(
+                        Integer.parseInt(eventId),
+                        eventType,
+                        bitmap,
+                        descriptionEditText.getText().toString(),
+                        locationOrAddressText.getText().toString(),
+                        district,
+                        dangerLevel,
+                        new Date(), // Use the current date
+                        0,
+                        0,
+                        new UserProfile(userId, username),
+                        ""
+                );
+
+
+
                 Log.d(TAG, "update event2: " + event.toString());
-                dbManager.updateEvent(event);
+                try {
+                    dbManager.updateEvent(event);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 Intent returnIntent = new Intent();
                 setResult(Activity.RESULT_OK,returnIntent);
                 finish();
@@ -162,7 +191,7 @@ public class EditEvent extends AppCompatActivity {
     }
 
     // load event data and set fields values
-    private void setFields() {
+    private void setFields() throws ParseException {
         Event oldEvent = dbManager.getEvent(eventId);
         descriptionEditText.setText(oldEvent.getDescription(), TextView.BufferType.EDITABLE);
         locationOrAddressText.setText(oldEvent.getLocation(), TextView.BufferType.EDITABLE);

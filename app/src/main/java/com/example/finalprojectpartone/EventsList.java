@@ -20,6 +20,8 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+
 import database.DBManager;
 
 public class EventsList extends AppCompatActivity
@@ -57,7 +59,7 @@ public class EventsList extends AppCompatActivity
     }
 
     //register confirm on event item and reload to refresh view
-    public void confirmOnClickHandler(View v) {
+    public void confirmOnClickHandler(View v) throws ParseException {
         String id = (String)v.getTag();
         Log.d(TAG, "confirm id: " + id + " userId: " + userId );
         dbManager.confirmEvent(id,userId);
@@ -67,7 +69,7 @@ public class EventsList extends AppCompatActivity
     }
 
     //register reject on event item and reload to refresh view
-    public void rejectOnClickHandler(View v) {
+    public void rejectOnClickHandler(View v) throws ParseException {
         String id = (String)v.getTag();
         Log.d(TAG, "rejected event id: " + id);
         dbManager.rejectEvent(id,userId);
@@ -99,7 +101,7 @@ public class EventsList extends AppCompatActivity
         textViewFilterDistrict = findViewById(R.id.TextViewFilterDistrict);
         textViewFilterOrderByActive = findViewById(R.id.TextViewFilterOrderByActive);
         textViewFilterApprovedByMe = findViewById(R.id.TextViewFilterApprovedByMe);
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         eventsAdapter = dbManager.populateAllUsersEventsListView();

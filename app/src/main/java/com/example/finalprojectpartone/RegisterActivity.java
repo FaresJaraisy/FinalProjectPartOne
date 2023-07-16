@@ -50,7 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
         mAuth= FirebaseAuth.getInstance();
         editTextEmail = findViewById(R.id.email);

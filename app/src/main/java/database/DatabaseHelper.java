@@ -92,7 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Creates the initial tables
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_DISTRICT_TABLE);
+        //db.execSQL(CREATE_DISTRICT_TABLE);
         db.execSQL(CREATE_EVENTS_TABLE);
         db.execSQL(CREATE_USERS_TABLE);
         db.execSQL(CREATE_COMMENTS_TABLE);
@@ -110,7 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS USERS");
-        db.execSQL("DROP TABLE IF EXISTS " + DISTRICT_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS " + DISTRICT_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + EVENTS_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + EVENT_TO_USER_CONFIRMATION_TABLE);
         onCreate(db);

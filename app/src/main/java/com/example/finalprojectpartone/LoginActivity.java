@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         EditText userName = findViewById(R.id.email);
         EditText userPassword = findViewById(R.id.password);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         // onClock handler to login button

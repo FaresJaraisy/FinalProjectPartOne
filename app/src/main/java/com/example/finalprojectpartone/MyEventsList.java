@@ -112,7 +112,7 @@ public class MyEventsList extends AppCompatActivity
         textViewFilterDistrict = findViewById(R.id.TextViewFilterDistrict);
         textViewFilterOrderByActive = findViewById(R.id.TextViewFilterOrderByActive);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         FilterSettings filterSettings = new FilterSettings("All", "All", "All", false, false);

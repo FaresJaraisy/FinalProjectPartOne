@@ -99,7 +99,7 @@ public class UserEventsSummary extends AppCompatActivity {
         userId = intent.getIntExtra("id", -1);
         username= intent.getStringExtra("username");
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
         totalReportedEvents = dbManager.getUsersEventsReportedCount(username);
         totalApproved = dbManager.getUserConfirmations(userId);

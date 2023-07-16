@@ -18,17 +18,23 @@ public class Event {
     private Date eventDate;
     private int confirmations;
     private int rejections;
-    private int userId;
     private UserProfile user;
 
-    public Event(String eventType, Bitmap imgBitmap, String description, String location, String district, String severity, UserProfile user) {
+    private String imageUrl; // Added field for the image URL
+
+    public Event(int id, String eventType, Bitmap imgBitmap, String description, String location, String district, String severity, Date eventDate, int confirmations, int rejections, UserProfile user, String imageUrl) {
+        this.id = id;
         this.eventType = eventType;
         this.imgBitmap = imgBitmap;
         this.description = description;
         this.location = location;
         this.district = district;
         this.severity = severity;
+        this.eventDate = eventDate;
+        this.confirmations = confirmations;
+        this.rejections = rejections;
         this.user = user;
+        this.imageUrl = imageUrl;
     }
 
     public int getConfirmations() {
@@ -48,6 +54,8 @@ public class Event {
     }
 
     public Date getEventDate() {
+        if(eventDate == null)
+            return new Date();
         return eventDate;
     }
 
@@ -112,11 +120,29 @@ public class Event {
     }
 
     public int getUserId() {
-        return userId;
+        return user.getId();
     }
 
     public void setUserId(int userId) {
-        this.userId = userId;
+        this.user.setId(userId);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", eventType='" + eventType + '\'' +
+                ", imgBitmap=" + imgBitmap +
+                ", description='" + description + '\'' +
+                ", location='" + location + '\'' +
+                ", district='" + district + '\'' +
+                ", severity='" + severity + '\'' +
+                ", eventDate=" + eventDate +
+                ", confirmations=" + confirmations +
+                ", rejections=" + rejections +
+                ", user=" + user.toString() +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 
     public byte[] getBitmapAsByteArray() {
@@ -132,5 +158,13 @@ public class Event {
 
     public void setRejections(int rejections) {
         this.rejections = rejections;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

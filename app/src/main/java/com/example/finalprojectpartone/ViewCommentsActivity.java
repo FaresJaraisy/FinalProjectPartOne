@@ -46,7 +46,7 @@ public class ViewCommentsActivity extends Activity {
         addButton = findViewById(R.id.addButton);
         filterCheckBox = findViewById(R.id.filterCheckBox);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
         Intent intent = this.getIntent();
 
@@ -98,7 +98,7 @@ public class ViewCommentsActivity extends Activity {
                 Comment comment = commentAdapter.getItem(position);
                 if (comment != null) {
                     // delete comment
-                    dbManager.deleteComment(comment.getId());
+                    dbManager.deleteComment(comment.getId(), true);
                     refreshCommentsFromDB();
                     //comments.remove(comment);
                     commentAdapter.notifyDataSetChanged();
@@ -122,7 +122,7 @@ public class ViewCommentsActivity extends Activity {
                     Log.d(TAG, "save update in edit mode: " + " username: " + username);
                     // Save the edited comment
                     if (selectedComment != null) {
-                        dbManager.updateComment(selectedComment.getId(), commentText);
+                        dbManager.updateComment(selectedComment.getId(), commentText, true);
                         refreshCommentsFromDB();
                         //selectedComment.setContent(commentText);
                         commentAdapter.notifyDataSetChanged();

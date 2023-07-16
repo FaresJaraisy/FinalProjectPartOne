@@ -3,6 +3,7 @@ package database;
 import static android.content.ContentValues.TAG;
 import static database.DatabaseHelper.*;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,12 +13,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.View;
 import android.widget.SimpleCursorAdapter;
 
 import com.example.finalprojectpartone.FilterSettings;
 import com.example.finalprojectpartone.R;
 import com.example.finalprojectpartone.UserProfile;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,8 +39,12 @@ public class DBManager {
     private final Context context;
     private SQLiteDatabase database;
     public static final String INC = "1";
-    public DBManager(Context c) {
+
+    FirebaseManager firebaseManager;
+
+    public DBManager(Context c, View rootView) {
         context = c;
+        firebaseManager = new FirebaseManager(rootView, this);
     }
 
     public DBManager open() throws SQLException {
@@ -113,11 +120,46 @@ public class DBManager {
         } else {
             Log.d(TAG, "Failed to add user to sql.");
         }
+        firebaseManager.addUser(String.valueOf(newRowId), username, password, "0", "0");
+    }
+
+    public void insertUser(int id, String username, String password, String confirmations, String rejections) {
+
+        ContentValues values = new ContentValues();
+        values.put(_ID, id);
+        values.put(USER_NAME_COL, username);
+        values.put(USER_PASSWORD_COL, password);
+        values.put(CONFIRMATIONS_COL, confirmations);
+        values.put(REJECTIONS_COL, rejections);
+
+        long newRowId = database.insert(USERS_TABLE, null, values);
+
+        if (newRowId != -1) {
+            Log.d(TAG, "User added to sql successfully.");
+        } else {
+            Log.d(TAG, "Failed to add user to sql.");
+        }
+    }
+
+    public void updateUserConfirmationAndRejection(int userId, String newConfirmation, String newRejection) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.CONFIRMATIONS_COL, newConfirmation);
+        contentValues.put(DatabaseHelper.REJECTIONS_COL, newRejection);
+
+        // Execute the UPDATE query
+        int rowsUpdated = database.update(DatabaseHelper.USERS_TABLE, contentValues, DatabaseHelper._ID + " = ?", new String[]{String.valueOf(userId)});
+
+        if (rowsUpdated > 0) {
+            Log.d(TAG, "Columns updated successfully.");
+        } else {
+            Log.d(TAG, "Failed to update columns.");
+        }
     }
 
 
+
     // Save new Event to DB and add current date time to the event row
-    public void insertEvent(Event event) {
+    public void insertEvent(Event event) throws ParseException {
         ContentValues contentValue = new ContentValues();
         contentValue.put(DatabaseHelper.TYPE_COL, event.getEventType());
         contentValue.put(DatabaseHelper.IMAGE_COL, event.getBitmapAsByteArray());
@@ -131,13 +173,20 @@ public class DBManager {
         String strDate = sdf.format(new Date());
         contentValue.put(DatabaseHelper.DATE_COL, strDate);
         contentValue.put(DatabaseHelper.CONFIRMATIONS_COL, 0);
-        contentValue.put(REJECTIONS_COL, 0);
-        database.insert(DatabaseHelper.EVENTS_TABLE_NAME, null, contentValue);
+        contentValue.put(DatabaseHelper.REJECTIONS_COL, 0);
+
+        long rowId = database.insert(DatabaseHelper.EVENTS_TABLE_NAME, null, contentValue);
+        if (rowId != -1) {
+            Event updatedEvent = getEvent(String.valueOf(rowId));
+            Log.d(TAG, "event to add: " + updatedEvent.toString());
+            firebaseManager.addEvent(updatedEvent, updatedEvent.getBitmapAsByteArray());
+        }
     }
+
 
     // This method confirms the event
     // A check is made if it was already approved by this user, if so early exit without changes
-    public void confirmEvent(String id, int userid) {
+    public void confirmEvent(String id, int userid) throws ParseException {
         String[] selectionArgs = new String[]{String.valueOf(userid),id};
         String[] cols = new String[]{DatabaseHelper.USER_ID_COL,DatabaseHelper.EVENT_ID_COL};
 
@@ -155,30 +204,96 @@ public class DBManager {
                         " SET " + DatabaseHelper.CONFIRMATIONS_COL +
                         " = " + DatabaseHelper.CONFIRMATIONS_COL + " + " + INC +
                         " WHERE " + DatabaseHelper._ID + " = " + id);
+
+        Event updatedEvent = getEvent(id);
+        firebaseManager.updateEvent(updatedEvent, updatedEvent.getBitmapAsByteArray());
+        //update event to user confirmation table:
         String insSql = "INSERT OR IGNORE INTO " + DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE +
                 "(" + DatabaseHelper.USER_ID_COL + ", " + DatabaseHelper.EVENT_ID_COL +") VALUES(" +
                 userid + ", " + id + " )";
         database.execSQL(insSql);
-        database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
+
+        // Get the last inserted row ID
+        cursor = database.rawQuery("SELECT last_insert_rowid() AS rowid", null);
+        int lastInsertedRowId = -1;
+        if (cursor.moveToFirst()) {
+            lastInsertedRowId = cursor.getInt(cursor.getColumnIndex("rowid"));
+        }
+        cursor.close();
+        firebaseManager.addEventToUserConfirmation(lastInsertedRowId, Integer.parseInt(id), userid);
+
+        /*database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
                 " SET " + DatabaseHelper.CONFIRMATIONS_COL +
                 " = " + DatabaseHelper.CONFIRMATIONS_COL + " + " + INC +
-                " WHERE " + DatabaseHelper._ID + " = " + userid);
+                " WHERE " + DatabaseHelper._ID + " = " + userid);*/
+        updateUserConfirmations(userid, 1);
+
+    }
+    public void updateUserConfirmations(int userId, int incrementValue) {
+        // Get the current value of the confirmations column
+        Cursor cursor = database.query(DatabaseHelper.USERS_TABLE, new String[]{DatabaseHelper.CONFIRMATIONS_COL}, DatabaseHelper._ID + " = ?", new String[]{String.valueOf(userId)}, null, null, null);
+        int currentValue = 0;
+        if (cursor.moveToFirst()) {
+            currentValue = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.CONFIRMATIONS_COL));
+        }
+        cursor.close();
+
+        // Calculate the updated value
+        int updatedValue = currentValue + incrementValue;
+
+        // Update the confirmations column with the new value
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.CONFIRMATIONS_COL, updatedValue);
+        int rowsUpdated = database.update(DatabaseHelper.USERS_TABLE, contentValues, DatabaseHelper._ID + " = ?", new String[]{String.valueOf(userId)});
+
+        if (rowsUpdated > 0) {
+            Log.d(TAG, "Updated user " + userId + " confirmations to: " + updatedValue);
+            // Call the appropriate method to update the value in Firebase
+            firebaseManager.updateUserConfirmations(String.valueOf(userId), updatedValue);
+        }
     }
 
     // This method rejects the event (as a separate value of the confirmations)
     // A check is made if it was already confirmed by this user, if so early exit without changes
-    public void rejectEvent(String id, int userId) {
+    public void rejectEvent(String id, int userId) throws ParseException {
         String[] bindingArgs = new String[]{ INC, DatabaseHelper._ID };
         database.execSQL("UPDATE " + DatabaseHelper.EVENTS_TABLE_NAME +
                 " SET " + REJECTIONS_COL +
                 " = " + REJECTIONS_COL + " + " + INC +
                 " WHERE " + DatabaseHelper._ID + " = " + id);
-
-        database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
+        Event updatedEvent = getEvent(id);
+        firebaseManager.updateEvent(updatedEvent, updatedEvent.getBitmapAsByteArray());
+       /* database.execSQL("UPDATE " + DatabaseHelper.USERS_TABLE +
                 " SET " + REJECTIONS_COL +
                 " = " + REJECTIONS_COL + " + " + INC +
-                " WHERE " + DatabaseHelper._ID + " = " + userId);
+                " WHERE " + DatabaseHelper._ID + " = " + userId);*/
+        updateUserRejections(userId, 1);
     }
+
+    public void updateUserRejections(int userId, int incrementValue) {
+        // Get the current value of the rejections column
+        Cursor cursor = database.query(DatabaseHelper.USERS_TABLE, new String[]{DatabaseHelper.REJECTIONS_COL}, DatabaseHelper._ID + " = ?", new String[]{String.valueOf(userId)}, null, null, null);
+        int currentValue = 0;
+        if (cursor.moveToFirst()) {
+            currentValue = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.REJECTIONS_COL));
+        }
+        cursor.close();
+
+        // Calculate the updated value
+        int updatedValue = currentValue + incrementValue;
+
+        // Update the rejections column with the new value
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.REJECTIONS_COL, updatedValue);
+        int rowsUpdated = database.update(DatabaseHelper.USERS_TABLE, contentValues, DatabaseHelper._ID + " = ?", new String[]{String.valueOf(userId)});
+
+        if (rowsUpdated > 0) {
+            Log.d(TAG, "Updated user " + userId + " rejections to: " + updatedValue);
+            // Call the appropriate method to update the value in Firebase
+            firebaseManager.updateUserRejections(String.valueOf(userId), updatedValue);
+        }
+    }
+
 
     //used for mapping the cursor adaptor
     String[] eventsCols = new String[] {
@@ -555,10 +670,16 @@ public class DBManager {
      * @param _id
      * @return
      */
-    public boolean deleteComment(int _id){
+
+    public boolean deleteComment(int _id, boolean modifyFirebase){
         String whereClause = "_id = ?";
         String[] whereArgs = {String.valueOf(_id)};
         int rowsDeleted = database.delete(COMMENTS_TABLE, whereClause, whereArgs);
+        if(modifyFirebase)
+        {
+            firebaseManager.deleteComment(_id);
+        }
+
         return rowsDeleted > 0;
     }
 
@@ -568,15 +689,19 @@ public class DBManager {
      * @param newContent
      * @return
      */
-    public boolean updateComment(int _id, String newContent){
+    public boolean updateComment(int _id, String newContent, boolean modifyFireBase){
         ContentValues contentValues = new ContentValues();
         contentValues.put(CONTENT_COL, newContent);
         String whereClause = "_id = ?";
         String[] whereArgs = {String.valueOf(_id)};
 
         int rowsUpdated = database.update(COMMENTS_TABLE,contentValues, whereClause, whereArgs);
+        if(modifyFireBase) {
+            firebaseManager.updateComment(_id, newContent);
+        }
         return rowsUpdated > 0;
     }
+
 
     /**
      *  Adds a new comment to the database
@@ -601,6 +726,26 @@ public class DBManager {
         if (rowId > -1){
             insertSuccess = true;
         }
+        firebaseManager.addComment((int)rowId, username, commentContent, eventId);
+
+        return insertSuccess;
+
+    }
+
+    public boolean addComment(int _id, String username, String commentContent, int eventId) throws DBManagerException {
+        boolean insertSuccess = false;
+
+        ContentValues contentValue = new ContentValues();
+        contentValue.put(DatabaseHelper._ID, _id);
+        contentValue.put(DatabaseHelper.CREATOR_COL, username);
+        contentValue.put(DatabaseHelper.CONTENT_COL, commentContent);
+        contentValue.put(DatabaseHelper.EVENT_ID_COL, eventId);
+
+        long rowId = database.insert(DatabaseHelper.COMMENTS_TABLE, null, contentValue);
+        if (rowId > -1){
+            insertSuccess = true;
+        }
+
         return insertSuccess;
 
     }
@@ -642,14 +787,16 @@ public class DBManager {
         String[] whereArgs = {id};
         String[] whereConfArgs = {String.valueOf(userId),id};
         database.delete(DatabaseHelper.EVENTS_TABLE_NAME, DatabaseHelper._ID + "=?" , whereArgs);
+        firebaseManager.deleteEvent(Integer.parseInt(id));
         // DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE
         database.delete(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE,
                 DatabaseHelper.USER_ID_COL + "=? AND " + DatabaseHelper.EVENT_ID_COL + "=?",
                 whereConfArgs);
+        firebaseManager.deleteEventToUserConfirmation(Integer.parseInt(id), userId);
     }
 
     // get event by id
-    public Event getEvent(String eventId) {
+    public Event getEvent(String eventId) throws ParseException {
         Event ret = null;
         Bitmap bitmap = null;
         byte[] byteArray;
@@ -673,12 +820,29 @@ public class DBManager {
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             byteArray = cursor.getBlob(2);
-            if (byteArray != null) bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            if (byteArray != null) {
+                bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            }
+
             ret = new Event(
-                    cursor.getString(1), bitmap,
-                    cursor.getString(3),cursor.getString(4),cursor.getString(5),
-                    cursor.getString(6), new UserProfile(Integer.parseInt(cursor.getString(11)),cursor.getString(10))
+                    cursor.getInt(0), // _id column, assuming it's at index 0
+                    cursor.getString(1), // TYPE_COL
+                    bitmap,
+                    cursor.getString(3), // DESCRIPTION_COL
+                    cursor.getString(4), // LOCATION_COL
+                    cursor.getString(5), // DISTRICT_COL
+                    cursor.getString(6), // SEVERITY_COL
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(cursor.getString(7)), // DATE_COL
+                    cursor.getInt(8), // CONFIRMATIONS_COL
+                    cursor.getInt(9), // REJECTIONS_COL
+                    new UserProfile(
+                            cursor.getInt(11), // USER_ID_COL
+                            cursor.getString(10) // USER_COL
+                    ),
+                    "" // Assuming imageUrl is not stored in the SQLite table
             );
+
+
         }
         //Event(eventType, Bitmap imgBitmap, description, location, district, severity, UserProfile user)
         cursor.close();
@@ -686,7 +850,7 @@ public class DBManager {
     }
 
     // update event by an event object
-    public void updateEvent(Event event) {
+    public void updateEvent(Event event) throws ParseException {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DatabaseHelper.TYPE_COL,event.getEventType());
@@ -698,6 +862,10 @@ public class DBManager {
 
         String[] whereArgs = {String.valueOf(event.getId())};
         int i = database.update(DatabaseHelper.EVENTS_TABLE_NAME, contentValues, DatabaseHelper._ID + " =?", whereArgs);
+
+        Event updatedEvent = getEvent(String.valueOf(event.getId()));
+
+        firebaseManager.updateEvent(updatedEvent, updatedEvent.getBitmapAsByteArray());
     }
 
     // get top 10 users based on the number of events reported
@@ -803,6 +971,91 @@ public class DBManager {
         cursor.close();
         return count;
     }
+
+    public void insertEventToUserConfirmation(int _ID, int eventId, String userId) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseHelper._ID, _ID);
+        values.put(DatabaseHelper.EVENT_ID_COL, eventId);
+        values.put(DatabaseHelper.USER_ID_COL, userId);
+
+        long newRowId = database.insert(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE, null, values);
+
+        if (newRowId != -1) {
+            Log.d(TAG, "Event to User Confirmation added to SQLite successfully.");
+        } else {
+            Log.d(TAG, "Failed to add Event to User Confirmation to SQLite.");
+        }
+    }
+
+    public void deleteEventToUserConfirmation(int _ID) {
+        int rowsDeleted = database.delete(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE,
+                DatabaseHelper._ID + " = ?",
+                new String[]{String.valueOf(_ID)});
+
+        if (rowsDeleted > 0) {
+            Log.d(TAG, "Event to User Confirmation deleted from SQLite successfully.");
+        } else {
+            Log.d(TAG, "Failed to delete Event to User Confirmation from SQLite.");
+        }
+    }
+
+    public void updateEventFromFB(int eventId, String type, String description, String location, String district,
+                            String severity, String date, int confirmations, int rejections, String user, int userId, byte[] imageBytes) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.TYPE_COL, type);
+        contentValues.put(DatabaseHelper.DESCRIPTION_COL, description);
+        contentValues.put(DatabaseHelper.LOCATION_COL, location);
+        contentValues.put(DatabaseHelper.DISTRICT_COL, district);
+        contentValues.put(DatabaseHelper.SEVERITY_COL, severity);
+        contentValues.put(DatabaseHelper.DATE_COL, date);
+        contentValues.put(DatabaseHelper.CONFIRMATIONS_COL, confirmations);
+        contentValues.put(DatabaseHelper.REJECTIONS_COL, rejections);
+        contentValues.put(DatabaseHelper.USER_COL, user);
+        contentValues.put(DatabaseHelper.USER_ID_COL, userId);
+        contentValues.put(DatabaseHelper.IMAGE_COL, imageBytes);
+
+        String whereClause = DatabaseHelper._ID + " = ?";
+        String[] whereArgs = {String.valueOf(eventId)};
+
+        int rowsUpdated = database.update(DatabaseHelper.EVENTS_TABLE_NAME, contentValues, whereClause, whereArgs);
+        if (rowsUpdated > 0) {
+            Log.d(TAG, "Event updated successfully");
+        }
+    }
+
+    public void insertEventFromFB(int eventId, String type, String description, String location, String district,
+                            String severity, String date, int confirmations, int rejections, String user, int userId, byte[] imageBytes) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper._ID, eventId);
+        contentValues.put(DatabaseHelper.TYPE_COL, type);
+        contentValues.put(DatabaseHelper.DESCRIPTION_COL, description);
+        contentValues.put(DatabaseHelper.LOCATION_COL, location);
+        contentValues.put(DatabaseHelper.DISTRICT_COL, district);
+        contentValues.put(DatabaseHelper.SEVERITY_COL, severity);
+        contentValues.put(DatabaseHelper.DATE_COL, date);
+        contentValues.put(DatabaseHelper.CONFIRMATIONS_COL, confirmations);
+        contentValues.put(DatabaseHelper.REJECTIONS_COL, rejections);
+        contentValues.put(DatabaseHelper.USER_COL, user);
+        contentValues.put(DatabaseHelper.USER_ID_COL, userId);
+        contentValues.put(DatabaseHelper.IMAGE_COL, imageBytes);
+
+        long rowId = database.insert(DatabaseHelper.EVENTS_TABLE_NAME, null, contentValues);
+        if (rowId != -1) {
+            Log.d(TAG, "Event inserted successfully");
+        }
+    }
+
+    public void deleteEventFromFB(int eventId) {
+        String whereClause = DatabaseHelper._ID + " = ?";
+        String[] whereArgs = {String.valueOf(eventId)};
+
+        int rowsDeleted = database.delete(DatabaseHelper.EVENTS_TABLE_NAME, whereClause, whereArgs);
+        if (rowsDeleted > 0) {
+            Log.d(TAG, "Event deleted successfully");
+        }
+    }
+
+
 }
 
 

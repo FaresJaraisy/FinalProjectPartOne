@@ -3,8 +3,17 @@ package data;
 public class user {
     private int id;
     private String userName;
+    String userPassword;
     private int confirmations;
 
+    public user(String userId, String userName, String userPassword, String confirmations, String rejections)
+    {
+        this.id = Integer.parseInt(userId);
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.confirmations = Integer.parseInt(confirmations);
+        this.rejections = Integer.parseInt(rejections);
+    }
     public int getConfirmations() {
         return confirmations;
     }

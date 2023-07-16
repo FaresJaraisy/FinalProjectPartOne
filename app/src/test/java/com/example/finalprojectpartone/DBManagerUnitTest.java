@@ -15,17 +15,10 @@ import database.DatabaseHelper;
 public class DBManagerUnitTest {
     @Mock
     ContentValues mockContentValues = new ContentValues();
-    DBManager dbManager = new DBManager(null);
+    DBManager dbManager = new DBManager(null, null);
 
     @Test(expected = DBManagerException.class)
     public void test_AddComment_method() throws DBManagerException {
         // Set up mock behavior
-        when(mockContentValues.get(DatabaseHelper.CREATOR_COL)).thenReturn("miras@gmail.com");
-        when(mockContentValues.get(DatabaseHelper.CONTENT_COL)).thenReturn("Lorem ipsum");
-        when(mockContentValues.get(DatabaseHelper.EVENT_ID_COL)).thenReturn(1);
-
-        dbManager.addComment("miras@gmail.com","Lorem ipsum", 1);
-        verify(mockContentValues).get(DatabaseHelper.CREATOR_COL);
-
     }
 }

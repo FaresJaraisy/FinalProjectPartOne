@@ -25,4 +25,11 @@ public class UserProfile {
     private int id;
     private String userName;
 
+    @Override
+    public String toString() {
+        return "UserProfile{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                '}';
+    }
 }

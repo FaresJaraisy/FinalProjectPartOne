@@ -12,8 +12,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import database.DBManager;
 
@@ -35,11 +38,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        FirebaseApp.initializeApp(this);
+        FirebaseFirestore.getInstance().setFirestoreSettings(
+                new FirebaseFirestoreSettings.Builder().setPersistenceEnabled(true).build()
+        );
+
+
         auth = FirebaseAuth.getInstance();
         button = findViewById (R.id.Logout);
         user = auth.getCurrentUser () ;
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         if (user == null) {

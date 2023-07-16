@@ -32,7 +32,7 @@ public class TotalEventsSummary extends AppCompatActivity {
         mediumEventsTextView = findViewById(R.id.mediumEventsTextView);
         highEventsTextView = findViewById(R.id.highEventsTextView);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
 

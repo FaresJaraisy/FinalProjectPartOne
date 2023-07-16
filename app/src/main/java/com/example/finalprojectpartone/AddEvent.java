@@ -21,6 +21,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+import java.util.Date;
+
 import data.Event;
 import database.DBManager;
 
@@ -45,7 +48,7 @@ public class AddEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
 
-        dbManager = new DBManager(this);
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
 
         init_fields();
@@ -61,10 +64,26 @@ public class AddEvent extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                event = new Event(eventType, imageBitmap,descriptionEditText.getText().toString(),
-                        locationOrAddressText.getText().toString(), district, dangerLevel,
-                        new UserProfile(userId, username));
-                dbManager.insertEvent(event);
+                event = new Event(
+                        0,
+                        eventType,
+                        imageBitmap,
+                        descriptionEditText.getText().toString(),
+                        locationOrAddressText.getText().toString(),
+                        district,
+                        dangerLevel,
+                        new Date(), // Use the current date
+                        0,
+                        0,
+                        new UserProfile(userId, username),
+                        ""
+                );
+
+                try {
+                    dbManager.insertEvent(event);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 Toast.makeText(AddEvent.this, "Event Saved",Toast.LENGTH_LONG).show();
                 clear_fields();
 
