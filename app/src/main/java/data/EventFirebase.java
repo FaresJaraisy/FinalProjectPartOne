@@ -126,6 +126,4 @@ public class EventFirebase {
     private String user;
     private int userId;
     private String imageUrl; // Added field for the image URL
-
-    // Constructors, getters, and setters...
 }

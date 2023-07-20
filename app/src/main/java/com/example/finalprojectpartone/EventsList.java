@@ -128,6 +128,7 @@ public class EventsList extends AppCompatActivity
                     Button btn = (Button) view;
                     btn.setTag(cursor.getString(columnIndex));
                     // user is checked to set the button enable, user cannot confirm his events
+                    Log.d(TAG, "user name check button " + username);
                     btn.setEnabled(!cursor.getString(0).equals(username));
                     return true;
                 } else if (view.getId() == R.id.buttonReject) {

@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import database.DBManager;
+import database.FirebaseManager;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -34,17 +35,42 @@ public class RegisterActivity extends AppCompatActivity {
     TextView textView;
 
     DBManager dbManager;
+   // FirebaseManager firebaseManager;
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
+            dbManager = new DBManager(this, findViewById(android.R.id.content));
+            dbManager.open();
+            dbManager.emptyCommentTable();
+            dbManager.emptyUsersTableSQLite();
+            dbManager.emptyEventToUserConfirmationTableSQLite();
+            dbManager.emptyEventsTableSQLite();
+
+            try {
+                // Sleep for 1 seconds (2000 milliseconds)
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // Handle the InterruptedException if needed
+                e.printStackTrace();
+            }
+            FirebaseManager firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
+
+            firebaseManager.fetchUsersDataFromFirebase();
+            firebaseManager.fetchCommentsFromFirebaseAndInsertToSQL();
+            firebaseManager.fillEventToUserConfirmationTableSQLite();
+            firebaseManager.fillEventsTableSQLite();
+
+            firebaseManager.startSyncWithSQLite();
+
             Intent intent = new Intent (getApplicationContext(), MainActivity.class);
             startActivity (intent);
             finish();
         }
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +78,12 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
         dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
+
+        //firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
+
+        //dbManager.emptyUsersTableSQLite();
+        //firebaseManager.fetchUsersDataFromFirebase();
+
         mAuth= FirebaseAuth.getInstance();
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
@@ -81,7 +113,10 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "Enter password", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                //firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
 
+                //dbManager.emptyUsersTableSQLite();
+                //firebaseManager.fetchUsersDataFromFirebase();
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override

@@ -43,4 +43,14 @@ public class Comment{
     public void setEventId(int eventId) {
         this.eventId = eventId;
     }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", username='" + username + '\'' +
+                ", eventId=" + eventId +
+                '}';
+    }
 }

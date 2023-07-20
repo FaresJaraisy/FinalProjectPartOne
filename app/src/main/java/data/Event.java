@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import com.example.finalprojectpartone.UserProfile;
 
 import java.io.ByteArrayOutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Event {
@@ -53,12 +55,16 @@ public class Event {
         this.user = user;
     }
 
-    public Date getEventDate() {
-        if(eventDate == null)
-            return new Date();
-        return eventDate;
+    public String getEventDateString() {
+        if(eventDate == null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
+            String strDate = sdf.format(new Date());
+            return strDate;
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
+        String strDate = sdf.format(eventDate);
+        return strDate;
     }
-
     public void setEventDate(Date eventDate) {
         this.eventDate = eventDate;
     }

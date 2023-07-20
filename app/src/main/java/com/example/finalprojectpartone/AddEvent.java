@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import data.Event;
@@ -64,6 +65,14 @@ public class AddEvent extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
+                String strDate = sdf.format(new Date());
+                Date date;
+                try {
+                    date = sdf.parse(strDate);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 event = new Event(
                         0,
                         eventType,
@@ -72,7 +81,7 @@ public class AddEvent extends AppCompatActivity {
                         locationOrAddressText.getText().toString(),
                         district,
                         dangerLevel,
-                        new Date(), // Use the current date
+                        date, // Use the current date
                         0,
                         0,
                         new UserProfile(userId, username),

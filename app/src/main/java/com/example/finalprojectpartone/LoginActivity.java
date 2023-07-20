@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import database.DBManager;
+import database.FirebaseManager;
 
 public class LoginActivity extends AppCompatActivity {
     private DBManager dbManager;
@@ -37,6 +38,31 @@ public class LoginActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
+
+            dbManager = new DBManager(this, findViewById(android.R.id.content));
+            dbManager.open();
+            dbManager.emptyCommentTable();
+            dbManager.emptyUsersTableSQLite();
+            dbManager.emptyEventToUserConfirmationTableSQLite();
+            dbManager.emptyEventsTableSQLite();
+
+            try {
+                // Sleep for 1 seconds (2000 milliseconds)
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // Handle the InterruptedException if needed
+                e.printStackTrace();
+            }
+            FirebaseManager firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
+
+            firebaseManager.fetchUsersDataFromFirebase();
+            firebaseManager.fetchCommentsFromFirebaseAndInsertToSQL();
+            firebaseManager.fillEventToUserConfirmationTableSQLite();
+            firebaseManager.fillEventsTableSQLite();
+
+            firebaseManager.startSyncWithSQLite();
+
+
             Intent intent = new Intent (getApplicationContext(), MainActivity.class);
             startActivity (intent);
             finish();
@@ -48,6 +74,30 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        dbManager = new DBManager(this, findViewById(android.R.id.content));
+        dbManager.open();
+        dbManager.emptyCommentTable();
+        dbManager.emptyUsersTableSQLite();
+        dbManager.emptyEventToUserConfirmationTableSQLite();
+        dbManager.emptyEventsTableSQLite();
+
+        try {
+            // Sleep for 1 seconds (2000 milliseconds)
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // Handle the InterruptedException if needed
+            e.printStackTrace();
+        }
+        FirebaseManager firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
+
+        firebaseManager.fetchUsersDataFromFirebase();
+        firebaseManager.fetchCommentsFromFirebaseAndInsertToSQL();
+        firebaseManager.fillEventToUserConfirmationTableSQLite();
+        firebaseManager.fillEventsTableSQLite();
+
+        firebaseManager.startSyncWithSQLite();
+
         mAuth= FirebaseAuth.getInstance();
 
         textView = findViewById(R.id.registerNow);
@@ -66,8 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         EditText userName = findViewById(R.id.email);
         EditText userPassword = findViewById(R.id.password);
 
-        dbManager = new DBManager(this, findViewById(android.R.id.content));
-        dbManager.open();
+
 
         // onClock handler to login button
         Login.setOnClickListener(new View.OnClickListener() {

@@ -1,8 +1,11 @@
 package com.example.finalprojectpartone;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -58,11 +61,13 @@ public class CommentAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-
         Comment comment = getItem(position);
+        Log.d(TAG, "comment in comment adapter: " + comments.toString());
 
         holder.authorTextView.setText(comment.getUsername());
         holder.contentTextView.setText(comment.getContent());
+
+        Log.d(TAG, "user in comment adapter: " + username);
 
         // Hide or show delete/edit buttons based on the author's username
         if (comment.getUsername().equals(username)) {

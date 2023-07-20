@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import database.DBManager;
+import database.FirebaseManager;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseUser user;
 
     private DBManager dbManager;
+    FirebaseManager firebaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,19 +46,26 @@ public class MainActivity extends AppCompatActivity {
                 new FirebaseFirestoreSettings.Builder().setPersistenceEnabled(true).build()
         );
 
-
         auth = FirebaseAuth.getInstance();
         button = findViewById (R.id.Logout);
         user = auth.getCurrentUser () ;
 
         dbManager = new DBManager(this, findViewById(android.R.id.content));
         dbManager.open();
+        firebaseManager = new FirebaseManager(findViewById(android.R.id.content), dbManager);
 
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(intent);
             finish();
         } else {
+            try {
+                // Sleep for 1 seconds (2000 milliseconds)
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // Handle the InterruptedException if needed
+                e.printStackTrace();
+            }
             UserProfile userdata = dbManager.getUser(user.getEmail());
             if (userdata != null) {
                 //Intent intent = getIntent();
@@ -69,8 +79,25 @@ public class MainActivity extends AppCompatActivity {
                 userId = userdata.getId();
                 username = userdata.getUserName();
                 setTitle("Logged as: " + userdata.getUserName());
+                /*dbManager.emptyCommentTable();
+                firebaseManager.fetchCommentsFromFirebaseAndInsertToSQL();
+
+                dbManager.emptyUsersTableSQLite();
+                firebaseManager.fetchUsersDataFromFirebase();
+
+                dbManager.emptyEventToUserConfirmationTableSQLite();
+                firebaseManager.fillEventToUserConfirmationTableSQLite();
+
+                dbManager.emptyEventsTableSQLite();
+                firebaseManager.fillEventsTableSQLite();*/
+
              } else {
-                Log.d(TAG, "in main activity user data is null");
+                Toast.makeText(MainActivity.this, "Your session has expired. Please log in again to continue.", Toast.LENGTH_SHORT).show();
+
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
+                finish();
             }
             //Intent intent = getIntent();
             //intent.putExtra("username", user.getEmail());
@@ -88,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu); // set menu layout

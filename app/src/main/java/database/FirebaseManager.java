@@ -2,6 +2,7 @@ package database;
 import static android.content.ContentValues.TAG;
 
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -25,7 +26,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import data.Comment;
@@ -70,7 +74,7 @@ public class FirebaseManager {
             for (DocumentChange documentChange : querySnapshot.getDocumentChanges()) {
                 QueryDocumentSnapshot document = documentChange.getDocument();
                 int id = Integer.parseInt(document.getId());
-                String creator = document.getString("creator");
+                String creator = document.getString("username");
                 String content = document.getString("content");
                 int eventId = document.getLong("eventId").intValue();
 
@@ -106,17 +110,18 @@ public class FirebaseManager {
                 String userId = document.getId();
                 String userName = document.getString("userName");
                 String userPassword = document.getString("userPassword");
-                String confirmations = document.getString("confirmations");
-                String rejections = document.getString("rejections");
+                Long confirmations = document.getLong("confirmations"); // Use getLong for numbers
+                Long rejections = document.getLong("rejections"); // Use getLong for numbers
+
 
                 switch (documentChange.getType()) {
                     case ADDED:
                         // Insert the user into SQLite database
-                        dbManager.insertUser(Integer.parseInt(userId), userName, userPassword, confirmations, rejections);
+                        dbManager.insertUser(Integer.parseInt(userId), userName, userPassword, confirmations != null ? confirmations.toString() : "0", rejections != null ? rejections.toString() : "0");
                         break;
                     case MODIFIED:
                         // Update the user in SQLite database
-                        dbManager.updateUserConfirmationAndRejection(Integer.parseInt(userId), confirmations, rejections);
+                        dbManager.updateUserConfirmationAndRejection(Integer.parseInt(userId), userName, confirmations != null ? confirmations.toString() : "0");
                         break;
                 }
             }
@@ -135,12 +140,12 @@ public class FirebaseManager {
                 QueryDocumentSnapshot document = documentChange.getDocument();
                 int _ID = Integer.parseInt(document.getId());
                 int eventId = document.getLong("eventId").intValue();
-                String userId = document.getString("userId");
+                int userId = document.getLong("userId").intValue();
 
                 switch (documentChange.getType()) {
                     case ADDED:
                         // Insert the entry into SQLite database
-                        dbManager.insertEventToUserConfirmation(_ID, eventId, userId);
+                        dbManager.insertEventToUserConfirmation(_ID, eventId, String.valueOf(userId));
                         break;
                     case REMOVED:
                         // Delete the entry from SQLite database
@@ -341,15 +346,15 @@ public class FirebaseManager {
                 event.setImageUrl(imageUrl);
 
                 // Save the event document in Firestore
-                EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDate().toString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), imageUrl);
+                EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDateString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), imageUrl);
                 eventsCollection.document(String.valueOf(event.getId())).set(efirebaseData)
                         .addOnSuccessListener(aVoid -> showSnackbar("Event added successfully"))
                         .addOnFailureListener(e -> showSnackbar("Failed to add event"));
             } else {
                 event.setImageUrl("");
-
+                Log.d(TAG, "saving date in firebase like this: "  + event.getEventDateString());
                 // Save the event document in Firestore
-                EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDate().toString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
+                EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDateString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
                 eventsCollection.document(String.valueOf(event.getId())).set(efirebaseData)
                         .addOnSuccessListener(aVoid -> showSnackbar("Event added successfully"))
                         .addOnFailureListener(e -> showSnackbar("Failed to add event"));
@@ -364,7 +369,7 @@ public class FirebaseManager {
         // Check if the event has an existing image URL
         if (event.getImageUrl() != null && !event.getImageUrl().equals("")) {
             // Update the event document in Firestore without updating the image
-            EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDate().toString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
+            EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDateString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
 
             eventsCollection.document(String.valueOf(event.getId())).set(efirebaseData)
                     .addOnSuccessListener(aVoid -> showSnackbar("Event updated successfully"))
@@ -381,12 +386,12 @@ public class FirebaseManager {
                     event.setImageUrl(imageUrl);
 
                     // Update the event document in Firestore
-                    EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDate().toString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), imageUrl);
+                    EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDateString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), imageUrl);
                     eventsCollection.document(String.valueOf(event.getId())).set(efirebaseData)
                             .addOnSuccessListener(aVoid -> showSnackbar("Event updated successfully"))
                             .addOnFailureListener(e -> showSnackbar("Failed to update event"));
                 } else {
-                    EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDate().toString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
+                    EventFirebase efirebaseData = new EventFirebase(event.getId(), event.getEventType(), event.getDescription(), event.getLocation(), event.getDistrict(), event.getSeverity(), event.getEventDateString(), event.getConfirmations(), event.getRejections(), event.getUser().getUserName(), event.getUserId(), "");
                     eventsCollection.document(String.valueOf(event.getId())).set(efirebaseData)
                             .addOnSuccessListener(aVoid -> showSnackbar("Event updated successfully"))
                             .addOnFailureListener(e -> showSnackbar("Failed to update event"));
@@ -425,70 +430,185 @@ public class FirebaseManager {
 
 
     //***************
-
-    public static byte[] downloadImage(String imageUrl) throws IOException {
+    public static void downloadImage(String imageUrl, ImageDownloadCallback callback) {
         if (imageUrl == null) {
-            return new byte[0];
+            callback.onImageDownloaded(new byte[0]);
+            return;
         }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        InputStream inputStream = null;
+        AsyncTask<Void, Void, byte[]> imageDownloadTask = new AsyncTask<Void, Void, byte[]>() {
+            @Override
+            protected byte[] doInBackground(Void... voids) {
+                try {
+                    URL url = new URL(imageUrl);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
 
-        try {
-            URL url = new URL(imageUrl);
-            inputStream = url.openStream();
+                    InputStream inputStream = connection.getInputStream();
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+
+                    return outputStream.toByteArray();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
 
-            return outputStream.toByteArray();
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
+            @Override
+            protected void onPostExecute(byte[] result) {
+                callback.onImageDownloaded(result);
             }
-            outputStream.close();
-        }
+        };
+
+        imageDownloadTask.execute();
     }
 
 
     public void insertEvent(int eventId, String type, String description, String location, String district,
                             String severity, String date, int confirmations, int rejections, String user, int userId, String imageUrl) {
-        // Download the image and convert it to a byte array
-        byte[] imageBytes;
-        try {
-            imageBytes = downloadImage(imageUrl);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to download image: " + imageUrl);
-            imageBytes = null;
-        }
-
-        // Insert the event into SQLite with the image BLOB
-        dbManager.insertEventFromFB(eventId, type, description, location, district, severity, date,
-                confirmations, rejections, user, userId, imageBytes);
+        // Download the image and insert the event into SQLite with the image BLOB
+        downloadImage(imageUrl, imageBytes -> {
+            // imageBytes will contain the downloaded image data
+            dbManager.insertEventFromFB(eventId, type, description, location, district, severity, date,
+                    confirmations, rejections, user, userId, imageBytes);
+        });
     }
 
     public void updateEvent(int eventId, String type, String description, String location, String district,
                             String severity, String date, int confirmations, int rejections, String user, int userId, String imageUrl) {
-        // Download the image and convert it to a byte array
-        byte[] imageBytes;
-        try {
-            imageBytes = downloadImage(imageUrl);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to download image: " + imageUrl);
-            imageBytes = null;
-        }
+        // Download the image and update the event in SQLite with the new image BLOB
+        downloadImage(imageUrl, imageBytes -> {
+            // imageBytes will contain the downloaded image data
+            dbManager.updateEventFromFB(eventId, type, description, location, district, severity, date,
+                    confirmations, rejections, user, userId, imageBytes);
+        });
+    }
 
-        // Update the event in SQLite with the new image BLOB
-        dbManager.updateEventFromFB(eventId, type, description, location, district, severity, date,
-                confirmations, rejections, user, userId, imageBytes);
+
+    public void     fetchCommentsFromFirebaseAndInsertToSQL() {
+        //dbManager.open(); // Ensure the database is open
+        CollectionReference commentsCollection = firestore.collection(COLLECTION_NAME).document(COMMENTS_COLLECTION_NAME).collection(COMMENTS_COLLECTION_NAME);
+        commentsCollection.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                QuerySnapshot querySnapshot = task.getResult();
+                if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        int id = Integer.parseInt(document.getId());
+                        String content = document.getString("content");
+                        String username = document.getString("username");
+                        int eventId = document.getLong("eventId").intValue();
+
+                        // Insert the comment data into the SQL comment table
+                        try {
+                            dbManager.addComment(id, username, content, eventId);
+                        } catch (DBManagerException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    Log.d(TAG, "Inserted comment data into SQL table");
+                } else {
+                    Log.d(TAG, "No comments found in Firebase");
+                }
+            } else {
+                Log.d(TAG, "Failed to fetch comments from Firebase: " + task.getException());
+            }
+
+            //dbManager.close(); // Close the database connection
+        });
+    }
+
+    public void fetchUsersDataFromFirebase() {
+        CollectionReference usersCollection = firestore.collection(COLLECTION_NAME).document(USERS_COLLECTION_NAME).collection(USERS_COLLECTION_NAME);
+        usersCollection.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        String userId = document.getId();
+                        String userName = document.getString("userName");
+                        String userPassword = document.getString("userPassword");
+                        Long confirmations = document.getLong("confirmations"); // Use getLong for numbers
+                        Long rejections = document.getLong("rejections"); // Use getLong for numbers
+
+                        // Insert the user into the users table
+                        dbManager.insertUser(Integer.parseInt(userId), userName, userPassword, confirmations != null ? confirmations.toString() : "0", rejections != null ? rejections.toString() : "0");
+                    }
+
+                })
+                .addOnFailureListener(e -> showSnackbar("Failed to populate users table from Firebase"));
+    }
+
+
+    public void fillEventToUserConfirmationTableSQLite() {
+
+        // Fetch event-to-user confirmations data from Firebase
+        CollectionReference eventToUserConfirmationCollection = firestore.collection(COLLECTION_NAME).document(EVENT_TO_USER_CONFIRMATION_COLLECTION_NAME).collection(EVENT_TO_USER_CONFIRMATION_COLLECTION_NAME);
+
+        eventToUserConfirmationCollection.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<EventToUserConfirmation> eventToUserConfirmations = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        int _ID = Integer.parseInt(document.getId());
+                        int eventId = document.getLong("eventId").intValue();
+                        int userId = document.getLong("userId").intValue();
+
+                        dbManager.insertEventToUserConfirmation(_ID, eventId, String.valueOf(userId));
+                    }
+
+
+                    Log.d(TAG, "Filled event_to_user_confirmation table in SQLite");
+
+                    showSnackbar("Fetched event-to-user confirmations data from Firebase and filled SQLite table");
+                })
+                .addOnFailureListener(e -> showSnackbar("Failed to fetch event-to-user confirmations data from Firebase"));
+    }
+
+    public void fillEventsTableSQLite() {
+
+        // Fetch events data from Firebase
+        CollectionReference eventsCollection = firestore.collection(COLLECTION_NAME).document(EVENTS_COLLECTION_NAME).collection(EVENTS_COLLECTION_NAME);
+
+        eventsCollection.get()
+                .addOnSuccessListener(querySnapshot -> {
+
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        int id = Integer.parseInt(document.getId());
+                        String type = document.getString("type");
+                        String description = document.getString("description");
+                        String location = document.getString("location");
+                        String district = document.getString("district");
+                        String severity = document.getString("severity");
+                        String date = document.getString("date");
+                        int confirmations = document.getLong("confirmations").intValue();
+                        int rejections = document.getLong("rejections").intValue();
+                        String user = document.getString("user");
+                        int userId = document.getLong("userId").intValue();
+                        String imageUrl = document.getString("imageUrl");
+
+                        insertEvent(id, type, description, location, district, severity, date,
+                                confirmations, rejections, user, userId, imageUrl);
+                    }
+
+                    Log.d(TAG, "Filled EVENTS table in SQLite");
+
+                    showSnackbar("Fetched events data from Firebase and filled SQLite table");
+                })
+                .addOnFailureListener(e -> showSnackbar("Failed to fetch events data from Firebase"));
+
     }
 
     private void showSnackbar(String message) {
         if (rootView != null) {
             Snackbar.make(rootView, "firebase message: " + message, Snackbar.LENGTH_SHORT).show();
         }
+    }
+
+    public interface ImageDownloadCallback {
+        void onImageDownloaded(byte[] imageBytes);
     }
 }

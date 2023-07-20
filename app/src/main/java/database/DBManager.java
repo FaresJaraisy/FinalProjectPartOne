@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import data.Comment;
@@ -124,7 +125,6 @@ public class DBManager {
     }
 
     public void insertUser(int id, String username, String password, String confirmations, String rejections) {
-
         ContentValues values = new ContentValues();
         values.put(_ID, id);
         values.put(USER_NAME_COL, username);
@@ -132,14 +132,31 @@ public class DBManager {
         values.put(CONFIRMATIONS_COL, confirmations);
         values.put(REJECTIONS_COL, rejections);
 
-        long newRowId = database.insert(USERS_TABLE, null, values);
+        // Check if the user with the given id already exists in the table
+        Cursor cursor = database.query(USERS_TABLE, new String[]{_ID}, _ID + "=?",
+                new String[]{String.valueOf(id)}, null, null, null);
 
-        if (newRowId != -1) {
-            Log.d(TAG, "User added to sql successfully.");
+        if (cursor != null && cursor.moveToFirst()) {
+            // User with the given id exists, update it
+            int rowsAffected = database.update(USERS_TABLE, values, _ID + "=?", new String[]{String.valueOf(id)});
+            if (rowsAffected > 0) {
+                Log.d(TAG, "User updated in SQLite successfully.");
+            }
+            cursor.close();
         } else {
-            Log.d(TAG, "Failed to add user to sql.");
+            // User with the given id doesn't exist, insert a new user
+            long newRowId = database.insert(USERS_TABLE, null, values);
+            if (newRowId != -1) {
+                Log.d(TAG, "User added to SQLite successfully.");
+            } else {
+                Log.d(TAG, "Failed to add user to SQLite.");
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
+
 
     public void updateUserConfirmationAndRejection(int userId, String newConfirmation, String newRejection) {
         ContentValues contentValues = new ContentValues();
@@ -169,7 +186,7 @@ public class DBManager {
         contentValue.put(DatabaseHelper.SEVERITY_COL, event.getSeverity());
         contentValue.put(DatabaseHelper.USER_COL, event.getUser().getUserName());
         contentValue.put(DatabaseHelper.USER_ID_COL, event.getUser().getId());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
         String strDate = sdf.format(new Date());
         contentValue.put(DatabaseHelper.DATE_COL, strDate);
         contentValue.put(DatabaseHelper.CONFIRMATIONS_COL, 0);
@@ -740,15 +757,30 @@ public class DBManager {
         contentValue.put(DatabaseHelper.CREATOR_COL, username);
         contentValue.put(DatabaseHelper.CONTENT_COL, commentContent);
         contentValue.put(DatabaseHelper.EVENT_ID_COL, eventId);
+        Log.d(TAG, "add comment for " + username + " id:" + _id + " " + commentContent);
 
-        long rowId = database.insert(DatabaseHelper.COMMENTS_TABLE, null, contentValue);
-        if (rowId > -1){
-            insertSuccess = true;
+        // Check if the comment with the given _id already exists in the table
+        Cursor cursor = database.query(DatabaseHelper.COMMENTS_TABLE, new String[]{DatabaseHelper._ID},
+                DatabaseHelper._ID + "=?", new String[]{String.valueOf(_id)}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // Comment with the given _id exists, update it
+            int rowsAffected = database.update(DatabaseHelper.COMMENTS_TABLE, contentValue,
+                    DatabaseHelper._ID + "=?", new String[]{String.valueOf(_id)});
+            insertSuccess = rowsAffected > 0;
+            cursor.close();
+        } else {
+            // Comment with the given _id doesn't exist, insert a new comment
+            long rowId = database.insert(DatabaseHelper.COMMENTS_TABLE, null, contentValue);
+            insertSuccess = rowId > -1;
+            if (cursor != null) {
+                cursor.close();
+            }
         }
 
         return insertSuccess;
-
     }
+
 
     /**
      * Helper function to check if the user creating the comment is adding it to
@@ -823,6 +855,8 @@ public class DBManager {
             if (byteArray != null) {
                 bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             }
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
+            Date date = sdf.parse(cursor.getString(7));
 
             ret = new Event(
                     cursor.getInt(0), // _id column, assuming it's at index 0
@@ -832,7 +866,7 @@ public class DBManager {
                     cursor.getString(4), // LOCATION_COL
                     cursor.getString(5), // DISTRICT_COL
                     cursor.getString(6), // SEVERITY_COL
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(cursor.getString(7)), // DATE_COL
+                    date, // DATE_COL
                     cursor.getInt(8), // CONFIRMATIONS_COL
                     cursor.getInt(9), // REJECTIONS_COL
                     new UserProfile(
@@ -978,14 +1012,33 @@ public class DBManager {
         values.put(DatabaseHelper.EVENT_ID_COL, eventId);
         values.put(DatabaseHelper.USER_ID_COL, userId);
 
-        long newRowId = database.insert(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE, null, values);
+        // Check if the entry with the given _ID already exists in the table
+        Cursor cursor = database.query(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE,
+                new String[]{DatabaseHelper._ID}, DatabaseHelper._ID + "=?",
+                new String[]{String.valueOf(_ID)}, null, null, null);
 
-        if (newRowId != -1) {
-            Log.d(TAG, "Event to User Confirmation added to SQLite successfully.");
+        if (cursor != null && cursor.moveToFirst()) {
+            // Entry with the given _ID exists, update it
+            int rowsAffected = database.update(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE, values,
+                    DatabaseHelper._ID + "=?", new String[]{String.valueOf(_ID)});
+            if (rowsAffected > 0) {
+                Log.d(TAG, "Event to User Confirmation updated in SQLite successfully.");
+            }
+            cursor.close();
         } else {
-            Log.d(TAG, "Failed to add Event to User Confirmation to SQLite.");
+            // Entry with the given _ID doesn't exist, insert a new entry
+            long newRowId = database.insert(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE, null, values);
+            if (newRowId != -1) {
+                Log.d(TAG, "Event to User Confirmation added to SQLite successfully.");
+            } else {
+                Log.d(TAG, "Failed to add Event to User Confirmation to SQLite.");
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
+
 
     public void deleteEventToUserConfirmation(int _ID) {
         int rowsDeleted = database.delete(DatabaseHelper.EVENT_TO_USER_CONFIRMATION_TABLE,
@@ -1024,7 +1077,7 @@ public class DBManager {
     }
 
     public void insertEventFromFB(int eventId, String type, String description, String location, String district,
-                            String severity, String date, int confirmations, int rejections, String user, int userId, byte[] imageBytes) {
+                                  String severity, String date, int confirmations, int rejections, String user, int userId, byte[] imageBytes) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseHelper._ID, eventId);
         contentValues.put(DatabaseHelper.TYPE_COL, type);
@@ -1039,11 +1092,30 @@ public class DBManager {
         contentValues.put(DatabaseHelper.USER_ID_COL, userId);
         contentValues.put(DatabaseHelper.IMAGE_COL, imageBytes);
 
-        long rowId = database.insert(DatabaseHelper.EVENTS_TABLE_NAME, null, contentValues);
-        if (rowId != -1) {
-            Log.d(TAG, "Event inserted successfully");
+        // Check if the event with the given eventId already exists in the table
+        Cursor cursor = database.query(DatabaseHelper.EVENTS_TABLE_NAME, new String[]{DatabaseHelper._ID},
+                DatabaseHelper._ID + "=?", new String[]{String.valueOf(eventId)}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // Event with the given eventId exists, update it
+            int rowsAffected = database.update(DatabaseHelper.EVENTS_TABLE_NAME, contentValues,
+                    DatabaseHelper._ID + "=?", new String[]{String.valueOf(eventId)});
+            if (rowsAffected > 0) {
+                Log.d(TAG, "Event updated successfully");
+            }
+            cursor.close();
+        } else {
+            // Event with the given eventId doesn't exist, insert a new event
+            long rowId = database.insert(DatabaseHelper.EVENTS_TABLE_NAME, null, contentValues);
+            if (rowId != -1) {
+                Log.d(TAG, "Event inserted successfully");
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
+
 
     public void deleteEventFromFB(int eventId) {
         String whereClause = DatabaseHelper._ID + " = ?";
@@ -1055,6 +1127,65 @@ public class DBManager {
         }
     }
 
+
+    public void emptyCommentTable() {
+        database.beginTransaction();
+        try {
+        // Empty the comment table if it exists
+        String emptyTableQuery = "DELETE FROM " + COMMENTS_TABLE;
+        database.execSQL(emptyTableQuery);
+        Log.d(TAG, "Emptied comment table");
+            database.setTransactionSuccessful();
+        } finally {
+            // End the transaction whether it was successful or not.
+            database.endTransaction();
+        }
+    }
+
+    public void emptyUsersTableSQLite() {
+        database.beginTransaction();
+        try {
+            // Empty the users table
+            String deleteTableQuery = "DELETE FROM " + USERS_TABLE;
+            database.execSQL(deleteTableQuery);
+            Log.d(TAG, "Emptied users table in SQLite");
+                // Commit the transaction after the delete operation is done.
+                database.setTransactionSuccessful();
+        } finally {
+            // End the transaction whether it was successful or not.
+            database.endTransaction();
+        }
+
+    }
+
+    public void emptyEventToUserConfirmationTableSQLite() {
+
+        database.beginTransaction();
+        try {
+        // Empty the event_to_user_confirmation table
+        String deleteTableQuery = "DELETE FROM " + EVENT_TO_USER_CONFIRMATION_TABLE;
+        database.execSQL(deleteTableQuery);
+        Log.d(TAG, "Emptied event_to_user_confirmation table in SQLite");
+            database.setTransactionSuccessful();
+        } finally {
+            // End the transaction whether it was successful or not.
+            database.endTransaction();
+        }
+    }
+
+    public void emptyEventsTableSQLite() {
+        database.beginTransaction();
+        try {
+        // Empty the EVENTS table
+        String deleteTableQuery = "DELETE FROM " + EVENTS_TABLE_NAME;
+        database.execSQL(deleteTableQuery);
+        Log.d(TAG, "Emptied EVENTS table in SQLite");
+            database.setTransactionSuccessful();
+        } finally {
+            // End the transaction whether it was successful or not.
+            database.endTransaction();
+        }
+    }
 
 }
 

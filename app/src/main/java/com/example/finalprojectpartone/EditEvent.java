@@ -115,6 +115,14 @@ public class EditEvent extends AppCompatActivity {
                 //        new UserProfile(userId, username));
 
                 //event.setId(Integer.parseInt(eventId));
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss XXX yyyy");
+                String strDate = sdf.format(new Date());
+                Date date;
+                try {
+                    date = sdf.parse(strDate);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 event = new Event(
                         Integer.parseInt(eventId),
                         eventType,
@@ -123,7 +131,7 @@ public class EditEvent extends AppCompatActivity {
                         locationOrAddressText.getText().toString(),
                         district,
                         dangerLevel,
-                        new Date(), // Use the current date
+                        date, // Use the current date
                         0,
                         0,
                         new UserProfile(userId, username),
